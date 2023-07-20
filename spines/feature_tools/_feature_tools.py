@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 
 def variation_threshold(df, threshold=0.01):
     """使用异众比例筛选特征"""
-    from ._df_preview import df_preview
+    from ..data_insight import df_preview
     filters = df_preview(df, indicators=['variation']).to_dict()['variation']
 
     cols = []
@@ -52,7 +52,7 @@ class FeatureSelector:
         self.floating = floating
 
         from functools import partial
-        from ._utils import log2file
+        from ..utils import log2file
         self.log2file_partial = partial(log2file, fp=log_file_path, line_end='\n', access_way='a', throw_out=True)
 
         self.log_file_path = log_file_path
@@ -346,7 +346,7 @@ def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, acco
         raise ValueError("according_to参数等于shap时，eval_x不能为None")
 
     from pandas import DataFrame, Series
-    from .metrics import sorted_shap_val
+    from ..metrics import sorted_shap_val
 
     if accoding_to == 'shap':
         importances = sorted_shap_val(model, eval_x, target=target)

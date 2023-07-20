@@ -51,12 +51,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-.csv
-.txt
-.tsv
-.pkl
-.jupyter/
-.DS_Store
 
 # Translations
 *.mo
@@ -83,7 +77,8 @@ docs/_build/
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
+.jupyter/
 
 # IPython
 profile_default/
@@ -143,3 +138,12 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# files
+*.csv
+*.txt
+*.tsv
+*.pkl
+
+# system stuff
+.DS_Store
