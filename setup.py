@@ -1,4 +1,4 @@
-from setuptools import Extension, dist, find_packages, setup
+from setuptools import find_packages, setup
 
 
 setup(
