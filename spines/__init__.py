@@ -26,7 +26,6 @@ from spines.feature_tools import (
     get_x_cols,
     exclude_columns
 )
-from ._linear import reg_wb
 from spines.preprocessing import (
     transform_dtypes_low_mem,
     transform_batch_dtypes_low_mem,

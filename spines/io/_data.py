@@ -4,8 +4,8 @@ from tqdm.auto import tqdm
 
 def dataloader(
         fp=None, file_root_path=None, name_prefix=None, sep=',',
-        chunk_size=None, save_as_pkl=True, transform2low_mem=True,
-        search_pkl_first=True, turbo_method='auto',
+        chunk_size=None, save_as_pkl=False, transform2low_mem=True,
+        search_pkl_first=False, turbo_method='auto',
         encoding='utf8', pandas_read_csv_kwargs=None
 ):
     """
@@ -81,8 +81,9 @@ def dataloader(
         if chunk_size:
             data = pd.DataFrame()
             for _tdf in tqdm(pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding), desc="Loading..."):
-                from ..preprocessing import transform_dtypes_low_mem
-                transform_dtypes_low_mem(_tdf, verbose=False)
+                if transform2low_mem:
+                    from ..preprocessing import transform_dtypes_low_mem
+                    transform_dtypes_low_mem(_tdf, verbose=False)
                 data = pd.concat((data, _tdf), axis=0)
         else:
             if turbo_method:

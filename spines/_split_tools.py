@@ -96,9 +96,6 @@ def train_test_split_bigdata(
         reset_index=reset_index
     )
 
-    del df
-    gc.collect()
-
     if not return_test:
         train_df, test_df = res
         if with_cols:

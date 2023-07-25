@@ -18,7 +18,6 @@ def get_sample_weights(df, target_col='is_losing_user', decay=1):
 def auto_search_threshold(x, y, model,
                           early_stopping=True,
                           floating=True,
-                          fast=True,
                           skip_steps=2,
                           floating_search_loop=2,
                           **predict_params):
@@ -33,8 +32,8 @@ def auto_search_threshold(x, y, model,
     assert isinstance(floating_search_loop, int) and floating_search_loop >= 0
 
     def _loops_chosen(loops, yp_pb=yp_prob, early_stopping=early_stopping):
-        max_f1 = 0
-        best_threshold = 0
+        mf = 0
+        bt = 0
         es = 0
         fast_signal = False
         init_skip_steps = 0
@@ -54,8 +53,8 @@ def auto_search_threshold(x, y, model,
 
             f1_epoch = f1_score(y, yp)
 
-            if f1_epoch > max_f1:
-                best_threshold, max_f1 = ts, f1_epoch
+            if f1_epoch > mf:
+                bt, mf = ts, f1_epoch
                 fast_signal = True
 
                 es = 0
@@ -63,12 +62,12 @@ def auto_search_threshold(x, y, model,
                 if early_stopping:
                     es += 1
                     if es >= 5:
-                        print(f"[early stopping]  max f1 score: {max_f1},  best threshold: {best_threshold}")
+                        print(f"[early stopping]  max f1 score: {mf},  best threshold: {bt}")
                         break
 
-            print(f"[current loop] try threshold: {ts}, max f1 score: {max_f1},  best threshold: {best_threshold}")
+            print(f"[current loop] try threshold: {ts}, max f1 score: {mf},  best threshold: {bt}")
 
-        return best_threshold, max_f1
+        return bt, mf
 
     max_f1_group = _loops_chosen(np.arange(0, 1, lr))
 

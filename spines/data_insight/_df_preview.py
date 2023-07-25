@@ -122,7 +122,7 @@ def df_preview(dataset, indicators=None):
                 ]):
             desc = i_data.describe()
 
-            global_params['nunique'] = desc['count']
+            global_params['nunique'] = i_data.nunique()
             global_params['max'] = desc.get('max')
             global_params['75%'] = desc.get('75%')
             global_params['median'] = desc.get('50%')
@@ -170,8 +170,9 @@ def df_preview(dataset, indicators=None):
         return df
 
 
-def df_simple_view(df, numeric_cols):
+def df_simple_view(df):
     """仅浏览数值大小分布"""
+    numeric_cols = select_numeric_cols(df)
     return df[numeric_cols].describe().T.sort_values('std', ascending=False) \
         .style.bar(subset=['mean'], color='#7BCC70') \
         .background_gradient(subset=['std'], cmap='Reds') \
