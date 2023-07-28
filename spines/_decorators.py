@@ -33,6 +33,10 @@ def memoize(fn):
             cache[args] = result
         return result
 
+    def clear_cache():
+        cache.clear()
+
+    wrapper.clear_cache = clear_cache
     return wrapper
 
 

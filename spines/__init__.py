@@ -1,22 +1,22 @@
 __version__ = '0.0.1'
 
 
-from spines.models import ThresholdVotingClassifier
+from .models import ThresholdVotingClassifier
 from ._cluster import make_cluster, plot_cluster_res
-from spines.io import dataloader
+from .io import dataloader
 from ._decorators import (
     timing_decorator,
     retry,
     memoize,
     log_execution
 )
-from spines.data_insight import (
+from .data_insight import (
     classify_samples_dist,
     show_na_inf,
     df_preview,
     df_simple_view
 )
-from spines.feature_tools import (
+from .feature_tools import (
     variation_threshold,
     vars_threshold,
     FeatureSelector,
@@ -26,7 +26,7 @@ from spines.feature_tools import (
     get_x_cols,
     exclude_columns
 )
-from spines.preprocessing import (
+from .preprocessing import (
     transform_dtypes_low_mem,
     transform_batch_dtypes_low_mem,
     inverse_transform_dtypes,
@@ -43,7 +43,7 @@ from ._thresholds import (
     auto_search_threshold
 )
 
-from spines.utils import (
+from .utils import (
     iter_count,
     check_has_params,
     drop_duplicates_with_order,
