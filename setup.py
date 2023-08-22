@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 setup(
     name='spinesUtils',
     version="0.0.1",
-    description='模型训练工具集 model trainning  toolsets',
+    description='模型训练工具集 model training  toolsets',
     keywords='computer vision',
     packages=find_packages(),
     long_description='./README.md',
