@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from spines.feature_tools import select_numeric_cols
+from spinesUtils.feature_tools import select_numeric_cols
 
 
 def classify_samples_dist(df, target_col, groupby=None):

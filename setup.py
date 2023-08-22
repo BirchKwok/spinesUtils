@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name='spines',
+    name='spinesUtils',
     version="0.0.1",
     description='模型训练工具集 model trainning  toolsets',
     keywords='computer vision',
@@ -16,7 +16,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
     ],
-    url='https://github.com/BirchKwok/spines',
+    url='https://github.com/BirchKwok/spinesUtils',
     author='Birch Kwok',
     author_email='birchkwok@gmail.com',
     install_requires=[
