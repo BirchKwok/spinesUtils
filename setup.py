@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='spinesUtils',
-    version="0.0.1",
+    version="0.0.2",
     description='模型训练工具集 model training  toolsets',
     keywords='computer vision',
     packages=find_packages(),
