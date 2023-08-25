@@ -20,11 +20,12 @@ def dataloader(
     assert pandas_read_csv_kwargs is None or isinstance(pandas_read_csv_kwargs, dict)
     assert encoding is None or isinstance(encoding, str)
     import os
+    from pathlib import Path
     import pandas as pd
 
     if fp:
         (file_root_path, name_prefix) = os.path.split(fp)
-        name_prefix = ''.join(name_prefix.split('.')[:-1])
+        name_prefix = fp[:-len(Path(fp).suffix)]
 
     pkl_name = os.path.join(file_root_path, name_prefix + '.pkl')
     tsv_name = os.path.join(file_root_path, name_prefix + '.tsv')
