@@ -53,6 +53,7 @@ class TreeSequentialFeatureSelector:
         'init_nums': (None, int),
         'baseline': (None, int),
         'fim': str,
+        'log_file_path': (None, str),
         'verbose': (bool, int)
     }, func_name='FeatureSelector')
     def __init__(
@@ -67,9 +68,7 @@ class TreeSequentialFeatureSelector:
             init_nums=None,
             baseline=None,
             fim='shap',
-            early_stopping_rounds=None,
             log_file_path='feature_selection.log',
-            best_features_save_path='best_feature.txt',
             verbose=True
     ):
         self.estimator = estimator
@@ -80,7 +79,6 @@ class TreeSequentialFeatureSelector:
         self.init_nums = init_nums
         self.baseline = baseline
         self.fim = fim
-        self.early_stopping_rounds = early_stopping_rounds
 
         self.score_func = make_metric(metrics_name)
         self.metrics_name = metrics_name
@@ -88,11 +86,6 @@ class TreeSequentialFeatureSelector:
         self.floating = floating
 
         self.logger = Printer(fp=log_file_path, verbose=verbose, truncate_file=True)
-
-        self.log_file_path = log_file_path
-        self.best_features_save_path = best_features_save_path
-
-        self.verbose = verbose
 
         self.best_cols_ = None
         self.best_score_ = np.finfo(np.float32).min
@@ -142,10 +135,6 @@ class TreeSequentialFeatureSelector:
             for idx, _c in enumerate(perms):
                 _test_cols = self._zoom_list(float_best_cols, _c, append=True)
 
-                # 如果相等则已训练过
-                if len(_test_cols) == self._zoom_list(float_best_cols, rollbacks, append=True):
-                    continue
-
                 est = deepcopy(self.estimator)
                 est.fit(x[_test_cols], y)
 
@@ -171,7 +160,12 @@ class TreeSequentialFeatureSelector:
             yield (x.iloc[train_idx, :].reset_index(drop=True), x.iloc[test_idx, :].reset_index(drop=True),
                    y[train_idx].reset_index(drop=True), y[test_idx].reset_index(drop=True))
 
-    @TypeAssert({'x': pd.DataFrame, 'y': pd.Series, 'early_stopping_rounds': (int, None), 'patience': int})
+    @TypeAssert({
+        'x': pd.DataFrame,
+        'y': pd.Series,
+        'early_stopping_rounds': (int, None),
+        'patience': int
+    })
     def fit(self, x, y, early_stopping_rounds=10, patience=10):
         self.logger.save_log_and_throwout(f"metrics: {self.metrics_name}")
         # 先根据异众比例剔除
@@ -224,7 +218,7 @@ class TreeSequentialFeatureSelector:
         self.logger.save_log_and_throwout(string="The initial full model was successfully obtained.")
         # 获取初始模型特征重要性
         init_feas = feature_importances(init_model, eval_x=x,
-                                        reverse=True, accoding_to=self.fim, target=y)['features'].values.tolist()
+                                        reverse=True, according_to=self.fim, target=y)['features'].values.tolist()
 
         # 初始评估特征个数
         init_nums = self.init_nums or 1
@@ -255,7 +249,7 @@ class TreeSequentialFeatureSelector:
         for idx, fea in enumerate(iter_feas):
             # 如果当前轮次已经达到忍耐次数
             if current_patience > patience:
-                if self.early_stopping_rounds:
+                if early_stopping_rounds:
                     # 轮次停止检查计数器 + 1
                     stopping_rounds += 1
 
@@ -336,7 +330,14 @@ class TreeSequentialFeatureSelector:
         return x[self.best_cols_]
 
 
-def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, accoding_to='model', target=None):
+@TypeAssert({
+    'eval_x': (None, pd.DataFrame),
+    'p_threshold': (None, int),
+    'reverse': bool,
+    'according_to': str,
+    'target': (None, pd.Series)
+})
+def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, according_to='model', target=None):
     """输出模型重要性的百分比排名， 默认倒序排列
     model: 模型，要求必须具备feature_importances_属性
     p_threshold: 过滤阈值(百分比)，返回过滤后的阈值的特征，要求大于等于0，小于等于100, 或者None
@@ -346,14 +347,14 @@ def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, acco
     assert all([hasattr(model, 'feature_importances_'), hasattr(model, 'feature_name_')])
     assert p_threshold is None or 0 <= p_threshold <= 100
     assert len(model.feature_name_) == len(model.feature_importances_)
-    assert accoding_to in ('model', 'shap')
+    assert according_to in ('model', 'shap')
 
-    if accoding_to == 'shap' and eval_x is None:
+    if according_to == 'shap' and eval_x is None:
         raise ValueError("according_to参数等于shap时，eval_x不能为None")
 
     from ..metrics import sorted_shap_val
 
-    if accoding_to == 'shap':
+    if according_to == 'shap':
         importances = sorted_shap_val(model, eval_x, target=target)
     else:
         importances = Series(model.feature_importances_, index=model.feature_name_)
@@ -387,16 +388,21 @@ def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, acco
     ], columns=['features', 'importance_val', 'importance_rate'])
 
 
-def select_numeric_cols(dataset, exclude_binary_value_column=False) -> np.ndarray:
-    import pandas as pd
-
-    assert isinstance(dataset, pd.DataFrame)
+@TypeAssert({
+    'df': pd.DataFrame,
+    'exclude_binary_value_column': bool
+})
+def select_numeric_cols(df, exclude_binary_value_column=False):
     if exclude_binary_value_column:
-        _ = dataset.nunique(axis=0)
+        _ = df.nunique(axis=0)
         return _[_ > 2].index
-    return dataset._get_numeric_data().columns
+    return df._get_numeric_data().columns
 
 
+@TypeAssert({
+    'df': pd.DataFrame,
+    'types': (str, list)
+})
 def get_specified_type_cols(df, types):
     """
     从pandas dataframe中快速选取对应类型数据
@@ -406,19 +412,18 @@ def get_specified_type_cols(df, types):
         if isinstance(types, list):
             if v in types:
                 _.append(k)
-        elif isinstance(types, str):
+        else:
             if v == types:
                 _.append(k)
-        else:
-            raise ValueError("`types` only accept list or string type")
     return _
 
 
-def get_x_cols(df, y_col, exclude_columns=None):
-    assert isinstance(y_col, (str, list))
-    assert exclude_columns is None or isinstance(exclude_columns, (str, list))
-    import pandas as pd
-    assert isinstance(df, pd.DataFrame)
+@TypeAssert({
+    'df': pd.DataFrame,
+    'y_col': (str, list),
+    'exclude_cols': (None, str, list)
+})
+def get_x_cols(df, y_col, exclude_cols=None):
     cols = df.columns.tolist()
     if isinstance(y_col, str):
         if y_col in cols:
@@ -428,18 +433,22 @@ def get_x_cols(df, y_col, exclude_columns=None):
             if yi in cols:
                 cols.remove(yi)
 
-    if exclude_columns is not None:
-        if isinstance(exclude_columns, str):
-            if exclude_columns in cols:
-                cols.remove(exclude_columns)
+    if exclude_cols is not None:
+        if isinstance(exclude_cols, str):
+            if exclude_cols in cols:
+                cols.remove(exclude_cols)
         else:
-            for ei in exclude_columns:
+            for ei in exclude_cols:
                 if ei in cols:
                     cols.remove(ei)
 
     return cols
 
 
+@TypeAssert({
+    'df': pd.DataFrame,
+    'cols': (list, tuple, np.ndarray, pd.Series)
+})
 def exclude_columns(df, cols):
     """返回排除掉指定列的dataframe
     :params:
@@ -451,11 +460,6 @@ def exclude_columns(df, cols):
     pd.core.DataFrame
 
     """
-    import pandas as pd
-    import numpy as np
-
-    assert isinstance(df, pd.DataFrame)
-    assert isinstance(cols, (list, tuple, np.ndarray, pd.Series))
     column_num = df.shape[1]
 
     if len(cols) / column_num < 0.3:

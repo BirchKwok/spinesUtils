@@ -30,7 +30,8 @@ setup(
         'matplotlib>=3.7.1',
         'dask>=2023.6.0',
         'shap>=0.41.0',
-        'frozendict>=2.3.0'
+        'frozendict>=2.3.0',
+        'pyarrow>=11.0.0'
     ],
     zip_safe=False,
     include_package_data=True

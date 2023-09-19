@@ -3,8 +3,15 @@ import pandas as pd
 from tqdm import tqdm
 
 from spinesUtils.utils import Printer
+from spinesUtils.asserts import TypeAssert
 
 
+@TypeAssert({
+    'samples': pd.Series,
+    'threshold': float,
+    'use_prob': bool,
+    'verbose': (bool, int)
+})
 def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=0):
     """获取预测为正例的样本"""
     from ._split_tools import df_block_split
@@ -35,6 +42,20 @@ def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=
     return samples.iloc[yp == 1, :].index.tolist()
 
 
+@TypeAssert({
+    'samples': pd.Series,
+    'columns': (None, list),
+    'target': (None, pd.Series),
+    'pos_label': int,
+    'threshold': float,
+    'use_prob': bool,
+    'method': str,
+    'check_additivity': bool,
+    'use_v2': bool,
+    'approximate': bool,
+    'tree_limit': (None, int),
+    'verbose': (bool, int)
+})
 def get_samples_shap_val(
         tree_model, samples, columns=None, target=None, pos_label=1, threshold=0.5,
         use_prob=False, method='shap', check_additivity=True, use_v2=True,
@@ -53,7 +74,6 @@ def get_samples_shap_val(
     assert check_additivity != approximate
 
     logger = Printer(verbose=verbose)
-
 
     if method == 'fast':
         try:
@@ -149,6 +169,15 @@ def get_samples_shap_val(
     return shap_values, pos_index
 
 
+@TypeAssert({
+    'samples': pd.Series,
+    'ascending': bool,
+    'columns': (None, list),
+    'pos_label': int,
+    'target': (None, pd.Series),
+    'threshold': float,
+    'use_prob': bool,
+})
 def sorted_shap_val(
         tree_model, samples,
         ascending=False,
@@ -169,6 +198,9 @@ def sorted_shap_val(
         return {'idx': np.argsort(shap_sum)[::-1], 'values': shap_sum}
 
 
+@TypeAssert({
+    'metrics_name': str
+})
 def make_metric(metrics_name):
     if metrics_name == 'f1':
         from sklearn.metrics import f1_score as score_func

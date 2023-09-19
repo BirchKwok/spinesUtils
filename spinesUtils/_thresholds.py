@@ -24,6 +24,17 @@ def get_sample_weights(df, target_col, decay=1):
     return [1 if i == max_class else max_class_nums / _dict[i] * decay for i in df[target_col]]
 
 
+@TypeAssert({
+    'x': pd.DataFrame,
+    'y': np.ndarray,
+    'metric_name': str,
+    'maximize': bool,
+    'early_stopping': bool,
+    'floating': bool,
+    'skip_steps': int,
+    'floating_search_loop': int,
+    'verbose': bool
+})
 def auto_search_threshold(x, y, model,
                           metric_name='f1',
                           maximize=True,
@@ -45,7 +56,7 @@ def auto_search_threshold(x, y, model,
 
     yp_prob = model.predict_proba(x, **predict_params)[:, 1].squeeze()
     assert skip_steps >= 1
-    assert isinstance(floating_search_loop, int) and floating_search_loop >= 0
+    assert floating_search_loop >= 0
 
     def _loops_chosen(loops, yp_pb=yp_prob, early_stopping=early_stopping):
         ms = np.finfo(np.float32).min

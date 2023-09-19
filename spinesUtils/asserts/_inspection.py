@@ -32,7 +32,7 @@ class BaseAssert:
 
 class TypeAssert(BaseAssert):
     """
-    function parameters type checker,
+    function parameters type checker
 
     """
 
