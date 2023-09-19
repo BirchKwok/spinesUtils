@@ -74,7 +74,7 @@ fe = TreeSequentialFeatureSelector(estimator, metrics_name='f1',
     forward=True,
     floating=True,
     log_file_path='feature_selection.log',
-    best_features_save_path='best_feature.txt', verbose=True)
+    verbose=True)
 
 fe.fit(your_df[x_cols], your_df[y_col])
 print(fe.best_cols_, fe.best_score_)
