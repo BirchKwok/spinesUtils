@@ -3,6 +3,7 @@
 模型训练工具集 model training  toolsets.
 
 使用pip安装spinesUtils use pip install spinesUtils
-```bash
+
+```python
 pip install spinesUtils
 ```
