@@ -134,11 +134,14 @@ print(
 ```python
 from spinesUtils import Printer
 
-your_logger = Printer(name='your_logger', verbose=True, 
-        truncate_file=True, with_time=True)
+your_logger = Printer(name='your_logger', 
+                      fp='/path/to/your.log', 
+                      verbose=True, 
+                      truncate_file=True, 
+                      with_time=True)
 
-your_logger.insert2file("test") 
-your_logger.print('test')
+your_logger.insert2file("test")  # only insert to log file
+your_logger.print('test') # only print to console
 
 # Or you can do it both
 your_logger.insert_and_throwout('test')
