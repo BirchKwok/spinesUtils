@@ -1,19 +1,33 @@
-import gc
-from typing import Any
+import numpy as np
+import pandas as pd
+
+from spinesUtils.asserts import TypeAssert
 
 
+@TypeAssert({
+    'df': pd.DataFrame,
+    'x_cols': (list, tuple, pd.Series, np.ndarray),
+    'y_col': str,
+    'shuffle': bool,
+    'return_valid': bool,
+    'random_state': (None, int),
+    'train_size': float,
+    'valid_size': float,
+    'stratify': (list, tuple, pd.Series, np.ndarray, None),
+    'reset_index': bool
+})
 def train_test_split_bigdata_df(
         df,
         x_cols,
         y_col,
         shuffle=True,
-        return_test=True,
+        return_valid=True,
         random_state=42,
         train_size=0.8,
         valid_size=0.5,
         stratify=None,
         reset_index=True
-) -> tuple[Any, Any, Any]:
+):
     """切割大型数据集
     
     默认返回三个数据集: 训练集、验证集、测试集, 数据集包含y_col
@@ -31,7 +45,7 @@ def train_test_split_bigdata_df(
         random_state=random_state,
         stratify=stratify
     )
-    if not return_test:
+    if not return_valid:
         if reset_index:
             return df.iloc[X_train_idx, :][[*x_cols, y_col]].reset_index(drop=True), \
                 df.iloc[test_xs_idx, :][[*x_cols, y_col]].reset_index(drop=True)
@@ -61,12 +75,25 @@ def train_test_split_bigdata_df(
         df.iloc[X_test_idx, :][[*x_cols, y_col]]
 
 
+@TypeAssert({
+    'df': pd.DataFrame,
+    'x_cols': (list, tuple, pd.Series, np.ndarray),
+    'y_col': str,
+    'shuffle': bool,
+    'return_valid': bool,
+    'random_state': (None, int),
+    'train_size': float,
+    'valid_size': float,
+    'stratify': (list, tuple, pd.Series, np.ndarray, None),
+    'with_cols': bool,
+    'reset_index': bool
+})
 def train_test_split_bigdata(
         df,
         x_cols,
         y_col,
         shuffle=True,
-        return_test=True,
+        return_valid=True,
         random_state=42,
         train_size=0.8,
         valid_size=0.5,
@@ -88,7 +115,7 @@ def train_test_split_bigdata(
         x_cols=x_cols,
         y_col=y_col,
         shuffle=shuffle,
-        return_test=return_test,
+        return_valid=return_valid,
         random_state=random_state,
         train_size=train_size,
         valid_size=valid_size,
@@ -96,7 +123,7 @@ def train_test_split_bigdata(
         reset_index=reset_index
     )
 
-    if not return_test:
+    if not return_valid:
         train_df, test_df = res
         if with_cols:
             return train_df[x_cols], test_df[x_cols], \
@@ -117,6 +144,10 @@ def train_test_split_bigdata(
         train_df[y_col].values, valid_df[y_col].values, test_df[y_col].values
 
 
+@TypeAssert({
+    'df': (pd.DataFrame, np.ndarray),
+    'rows_limit': int
+})
 def df_block_split(df, rows_limit=10000):
     """
     将pandas.core.dataframe切割，并返回索引生成器

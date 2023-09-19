@@ -1,12 +1,29 @@
 """数据类"""
 from tqdm.auto import tqdm
 
+from spinesUtils.utils import Printer
+from spinesUtils.asserts import TypeAssert
 
+
+@TypeAssert({
+    'fp': (None, str),
+    'file_root_path': (None, str),
+    'name_prefix': (None, str),
+    'sep': str,
+    'chunk_size': (None, int),
+    'save_as_pkl': bool,
+    'transform2low_mem': bool,
+    'search_pkl_first': bool,
+    'turbo_method': str,
+    'encoding': (None, str),
+    'verbose': bool,
+    'pandas_read_csv_kwargs': (None, dict)
+})
 def dataloader(
         fp=None, file_root_path=None, name_prefix=None, sep=',',
         chunk_size=None, save_as_pkl=False, transform2low_mem=True,
         search_pkl_first=False, turbo_method='auto',
-        encoding='utf8', pandas_read_csv_kwargs=None
+        encoding='utf8', verbose=False, pandas_read_csv_kwargs=None
 ):
     """
     :params:
@@ -16,9 +33,6 @@ def dataloader(
     sep: 文件分隔符
     chunk_size: 每次读取行数，如果为None，默认一次性全部读取，否则将分批加载进内存
     """
-    assert chunk_size is None or isinstance(chunk_size, int)
-    assert pandas_read_csv_kwargs is None or isinstance(pandas_read_csv_kwargs, dict)
-    assert encoding is None or isinstance(encoding, str)
     import os
     from pathlib import Path
     import pandas as pd
@@ -31,6 +45,8 @@ def dataloader(
     tsv_name = os.path.join(file_root_path, name_prefix + '.tsv')
     csv_name = os.path.join(file_root_path, name_prefix + '.csv')
     txt_name = os.path.join(file_root_path, name_prefix + '.txt')
+
+    logger = Printer()
 
     def turbo_reader(fpath, tm):
         if tm == 'auto':
@@ -61,9 +77,8 @@ def dataloader(
             return read_csv(fpath, sep=sep, encoding=encoding)
 
     def read_pkl():
-
         if os.path.isfile(pkl_name):
-            print("File found: ", pkl_name)
+            logger.print("File found: ", pkl_name)
 
             return pd.read_pickle(pkl_name)
 
@@ -81,7 +96,12 @@ def dataloader(
 
         if chunk_size:
             data = pd.DataFrame()
-            for _tdf in tqdm(pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding), desc="Loading..."):
+            if not verbose:
+                iter_pieces = tqdm(pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding), desc="Loading")
+            else:
+                iter_pieces = pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding)
+
+            for _tdf in iter_pieces:
                 if transform2low_mem:
                     from ..preprocessing import transform_dtypes_low_mem
                     transform_dtypes_low_mem(_tdf, verbose=False)
@@ -117,7 +137,7 @@ def dataloader(
 
     if transform2low_mem:
         from ..preprocessing import transform_dtypes_low_mem
-        transform_dtypes_low_mem(df)
+        transform_dtypes_low_mem(df, verbose=verbose)
 
     if save_as_pkl:
         df.to_pickle(pkl_name)

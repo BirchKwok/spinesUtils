@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm, trange
 
+from spinesUtils.asserts import generate_function_kwargs, TypeAssert
+from spinesUtils.utils import Printer
+
 
 def show_mem_change(func):
     def reduce_dataset_mem(dataset):
@@ -14,21 +17,27 @@ def show_mem_change(func):
         return dataset.memory_usage(deep=True).sum() / 1024 ** 2
 
     @wraps(func)
-    def wrapper(dataset, verbose=True, **kwargs):
-        assert isinstance(dataset, (list, tuple, pd.DataFrame))
-        if isinstance(dataset, (list, tuple)):
-            assert all([isinstance(i, pd.DataFrame) for i in dataset])
+    def wrapper(*args, **kwargs):
+        logger = Printer(with_time=False)
+        kwargs = generate_function_kwargs(func, args, kwargs)
+        if isinstance(kwargs.get('dataset'), (list, tuple)):
+            assert all([isinstance(i, pd.DataFrame) for i in kwargs['dataset']])
 
-        start_mem = reduce_dataset_mem(dataset)
-        res = func(dataset=dataset, verbose=verbose, **kwargs)
-        end_mem = reduce_dataset_mem(res if res is not None else dataset)
+        start_mem = reduce_dataset_mem(kwargs.get('dataset')) or 0
+        res = func(**kwargs)
+        end_mem = reduce_dataset_mem(res if res is not None else kwargs.get('dataset')) or 0
 
-        if verbose:
-            print(f'Memory usage before conversion is: {round(start_mem, 2)} MB  ')
-            print(f'Memory usage after conversion is: {round(end_mem, 2)} MB  ')
-            print(
+        if kwargs.get('verbose'):
+            logger.print(f'Memory usage before conversion is: {round(start_mem, 2)} MB  ')
+            logger.print(f'Memory usage after conversion is: {round(end_mem, 2)} MB  ')
+            try:
+                decrease = round(100 * (start_mem - end_mem) / start_mem, 1)
+            except ZeroDivisionError:
+                decrease = 0
+
+            logger.print(
                 f'After conversion, the percentage of memory fluctuation is'
-                f' {round(100 * (start_mem - end_mem) / start_mem, 1)} %'
+                f' {decrease} %'
             )
         return res
 

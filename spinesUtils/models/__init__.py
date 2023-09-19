@@ -1,1 +1,1 @@
-from ._balance_model import ThresholdVotingClassifier
+from ._balance_model import BinaryBalanceClassifier

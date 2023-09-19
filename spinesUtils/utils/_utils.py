@@ -25,27 +25,6 @@ def check_has_params(func, params):
         return False
 
 
-def log2file(fp, string, access_way='a', line_end='\n', throw_out=True):
-    assert access_way in ('a', 'w')
-
-    import os
-    import datetime
-
-    if not os.path.isfile(fp):
-        print(f"file {fp} not exists, will be created.")
-
-    prefix_format = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - '
-
-    if throw_out:
-        print(prefix_format + string)
-        
-    if line_end is not None and isinstance(line_end, str):
-        string += line_end
-
-    with open(fp, access_way) as f:
-        f.write(prefix_format + string)
-
-
 def drop_duplicates_with_order(list_):
     """删除列表中的重复项，只保留第一项"""
     assert isinstance(list_, (list, tuple, np.ndarray))

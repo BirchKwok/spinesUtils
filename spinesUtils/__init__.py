@@ -1,7 +1,7 @@
-__version__ = '0.0.2'
+__version__ = '0.2.0'
 
 
-from .models import ThresholdVotingClassifier
+from .models import BinaryBalanceClassifier
 from ._cluster import make_cluster, plot_cluster_res
 from .io import dataloader
 from ._decorators import (
@@ -19,7 +19,7 @@ from .data_insight import (
 from .feature_tools import (
     variation_threshold,
     vars_threshold,
-    FeatureSelector,
+    TreeSequentialFeatureSelector,
     feature_importances,
     select_numeric_cols,
     get_specified_type_cols,
@@ -47,16 +47,19 @@ from .utils import (
     iter_count,
     check_has_params,
     drop_duplicates_with_order,
-    log2file,
     get_file_md5,
     check_files_fingerprint,
     folder_iter,
     find_same_file,
-    UnifiedPrint
+    Printer
 )
 from .metrics import (
     get_samples_shap_val,
     pos_pred_sample,
     sorted_shap_val
 )
-
+from .asserts import (
+    TypeAssert,
+    get_function_params,
+    generate_function_kwargs
+)
