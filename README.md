@@ -4,7 +4,7 @@
 
 ****
 
-This is where the story begins:
+This is where all stories begin:
 ```bash
 pip install spinesUtils
 ```
