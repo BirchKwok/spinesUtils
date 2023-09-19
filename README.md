@@ -1,14 +1,15 @@
 # spinesUtils -- A Machine-Learning Toolsets
 
-模型训练工具集 model training toolsets.
+*Let you get more done in less time.*
 
-使用pip安装 `use pip install spinesUtils`
+****
 
+This is where the story begins:
 ```bash
 pip install spinesUtils
 ```
 
-## better csv dataloader
+## better CSV dataloader
 ```python
 from spinesUtils import dataloader
 
@@ -24,7 +25,7 @@ your_df = dataloader(
 
 ```
 
-## better pandas dataframe insight tools
+## better pandas DataFrame insight tools
 ```python
 from spinesUtils import df_preview, classify_samples_dist
 
