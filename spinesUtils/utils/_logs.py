@@ -63,6 +63,6 @@ class Printer:
             writer(self.prefix_format() + string)
 
     @TypeAssert({'string': str, 'access_way': str, 'line_end': (None, str)})
-    def save_log_and_throwout(self, string, access_way='a', line_end='\n'):
+    def insert_and_throwout(self, string, access_way='a', line_end='\n'):
         self.insert2file(string, access_way, line_end)
         self.print(string)

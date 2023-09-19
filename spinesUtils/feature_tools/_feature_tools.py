@@ -141,7 +141,7 @@ class TreeSequentialFeatureSelector:
                 current_epoch_score = self._batch_evaluate(est, _test_cols, eval_set)
 
                 if compare_f(current_epoch_score, best_score):
-                    self.logger.save_log_and_throwout(
+                    self.logger.insert_and_throwout(
                         string=f"[float {current_searching_epoch}-{idx + 1}/{len(perms)}] - "
                                f"feas_num {len(_test_cols)}] # best loop,"
                                f"{self.metrics_name} score is: {current_epoch_score}")
@@ -167,13 +167,13 @@ class TreeSequentialFeatureSelector:
         'patience': int
     })
     def fit(self, x, y, early_stopping_rounds=10, patience=10):
-        self.logger.save_log_and_throwout(f"metrics: {self.metrics_name}")
+        self.logger.insert_and_throwout(f"metrics: {self.metrics_name}")
         # 先根据异众比例剔除
         variation_chosen_cols = variation_threshold(x, 0.01)
-        self.logger.save_log_and_throwout(f"excluded columns using the variation ratio: {variation_chosen_cols}")
+        self.logger.insert_and_throwout(f"excluded columns using the variation ratio: {variation_chosen_cols}")
         # 再剔除零方差的样本
         low_var_cols = vars_threshold(x, 0.0)
-        self.logger.save_log_and_throwout(f"using zero variance: {low_var_cols}")
+        self.logger.insert_and_throwout(f"using zero variance: {low_var_cols}")
 
         to_delete_cols = set(variation_chosen_cols) | set(low_var_cols)
 
@@ -215,7 +215,7 @@ class TreeSequentialFeatureSelector:
 
         # 获取初始模型
         init_model = estimator.fit(x, y)
-        self.logger.save_log_and_throwout(string="The initial full model was successfully obtained.")
+        self.logger.insert_and_throwout(string="The initial full model was successfully obtained.")
         # 获取初始模型特征重要性
         init_feas = feature_importances(init_model, eval_x=x,
                                         reverse=True, according_to=self.fim, target=y)['features'].values.tolist()
@@ -320,7 +320,7 @@ class TreeSequentialFeatureSelector:
             loop_desc += (f" {self.metrics_name} score is: {current_loop_score}, "
                           f"current part of dataset best score is: {best_score}")
 
-            self.logger.save_log_and_throwout(string=loop_desc)
+            self.logger.insert_and_throwout(string=loop_desc)
 
         return best_cols, best_score
 

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='spinesUtils',
-    version="0.2.0",
+    version="0.2.5",
     description='模型训练工具集 model training  toolsets',
     keywords='machine learning',
     packages=find_packages(),
