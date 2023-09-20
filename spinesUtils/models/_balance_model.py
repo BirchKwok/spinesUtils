@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from frozendict import frozendict
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 from spinesUtils.utils import Printer
 
 
@@ -10,8 +10,8 @@ class BinaryBalanceClassifier:
     """
     Balanced voting classifier with threshold, suitable for binary classification
     """
-    @TypeAssert({'meta_estimators': (list, tuple), 'verbose': bool}, 
-                func_name='ThresholdVotingClassifier')
+    @ParameterTypeAssert({'meta_estimators': (list, tuple), 'verbose': (bool, int)},
+                         func_name='ThresholdVotingClassifier')
     def __init__(self, meta_estimators, verbose=True) -> None:
         """多数类label需设置为0，少数类label为1"""
         assert len(meta_estimators) == 2, \
@@ -28,7 +28,7 @@ class BinaryBalanceClassifier:
         
         self.logger = Printer(verbose=verbose)
 
-    @TypeAssert({
+    @ParameterTypeAssert({
         'X_train': (np.ndarray, pd.DataFrame),
         'y_train': (np.ndarray, pd.Series),
         'second_model_input_size': str
@@ -69,7 +69,7 @@ class BinaryBalanceClassifier:
 
         return x, y
 
-    @TypeAssert({
+    @ParameterTypeAssert({
         'X_train': (np.ndarray, pd.DataFrame),
         'y_train': (np.ndarray, pd.Series)
     })
@@ -100,7 +100,7 @@ class BinaryBalanceClassifier:
         _ = {i: round(c[i] / sum_c, 2) for i in c.keys()}
         return dict(sorted(_.items(), key=lambda s: s[0]))
 
-    @TypeAssert({
+    @ParameterTypeAssert({
         'X': (np.ndarray, pd.DataFrame),
         'y': (np.ndarray, pd.Series),
         'threshold_search_set': (None, list, tuple)
@@ -220,7 +220,7 @@ class BinaryBalanceClassifier:
 
         return y_pred_L2, y_pred_L3
 
-    @TypeAssert({'X': (np.ndarray, pd.DataFrame), 'vote_method': str})
+    @ParameterTypeAssert({'X': (np.ndarray, pd.DataFrame), 'vote_method': str})
     def predict(self, X, vote_method='soft'):
         assert vote_method in ('soft', 'hard')
         if vote_method == 'hard':
@@ -234,7 +234,7 @@ class BinaryBalanceClassifier:
 
         return np.where(yps == 2, 1, 0)
 
-    @TypeAssert({'X': (np.ndarray, pd.DataFrame)})
+    @ParameterTypeAssert({'X': (np.ndarray, pd.DataFrame)})
     def predict_proba(self, X):
         y_pred_L2, y_pred_L3 = self._predict(X, 'soft')
 

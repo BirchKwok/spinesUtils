@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name='spinesUtils',
-    version="0.2.5",
-    description='模型训练工具集 model training  toolsets',
+    version="0.2.8",
+    description='Machine-Learning Toolsets',
     keywords='machine learning',
     packages=find_packages(),
     long_description=long_description,
@@ -31,7 +31,8 @@ setup(
         'dask>=2023.6.0',
         'shap>=0.41.0',
         'frozendict>=2.3.0',
-        'pyarrow>=11.0.0'
+        'pyarrow>=11.0.0',
+        'polars>=0.19.3'
     ],
     zip_safe=False,
     include_package_data=True

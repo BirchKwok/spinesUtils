@@ -8,12 +8,13 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 from spinesUtils.utils import Printer
 from spinesUtils.metrics import make_metric
 
 
-@TypeAssert({'df': DataFrame, 'threshold': float})
+@ParameterTypeAssert({'df': DataFrame, 'threshold': float})
+@ParameterValuesAssert({'threshold': 'lambda s: 0 <= s <= 1'})
 def variation_threshold(df, threshold=0.01):
     """使用异众比例筛选特征"""
     from spinesUtils.data_insight import df_preview
@@ -27,7 +28,8 @@ def variation_threshold(df, threshold=0.01):
     return cols
 
 
-@TypeAssert({'df': DataFrame, 'threshold': float})
+@ParameterTypeAssert({'df': DataFrame, 'threshold': float})
+@ParameterValuesAssert({'threshold': 'lambda s: 0 <= s <= 1'})
 def vars_threshold(df, threshold=0.0):
     """方差筛选法"""
     df_var = {}
@@ -43,7 +45,7 @@ def vars_threshold(df, threshold=0.0):
 
 
 class TreeSequentialFeatureSelector:
-    @TypeAssert({
+    @ParameterTypeAssert({
         'metrics_name': str,
         'cv': int,
         'cv_shuffle': bool,
@@ -55,6 +57,11 @@ class TreeSequentialFeatureSelector:
         'fim': str,
         'log_file_path': (None, str),
         'verbose': (bool, int)
+    }, func_name='FeatureSelector')
+    @ParameterValuesAssert({
+        'metrics_name': ('f1', 'recall', 'precision', 'accuracy', 'mse', 'mae', 'r2'),
+        'cv': 'lambda s: s >= 0',
+        'fim': ('shap', 'model')
     }, func_name='FeatureSelector')
     def __init__(
             self,
@@ -160,7 +167,7 @@ class TreeSequentialFeatureSelector:
             yield (x.iloc[train_idx, :].reset_index(drop=True), x.iloc[test_idx, :].reset_index(drop=True),
                    y[train_idx].reset_index(drop=True), y[test_idx].reset_index(drop=True))
 
-    @TypeAssert({
+    @ParameterTypeAssert({
         'x': pd.DataFrame,
         'y': pd.Series,
         'early_stopping_rounds': (int, None),
@@ -179,18 +186,15 @@ class TreeSequentialFeatureSelector:
 
         cv_cols_set = set()
 
+        best_cols, best_score = self.best_cols_, self.best_score_
+
         if self.cv > 0:
             for x_train, x_test, y_train, y_test in self._n_fold_dataset(x.drop(columns=list(to_delete_cols)), y):
                 cols, score = self._fit(x_train, y_train, eval_set=[(x_test, y_test)],
                                         early_stopping_rounds=early_stopping_rounds, patience=patience)
-                for c in cols:
-                    cv_cols_set.add(c)
-            # evaluate on the whole dataset
-            _chosen_cols = list(cv_cols_set)
-            best_cols, best_score = self._fit(
-                x[_chosen_cols], y, eval_set=[(x[_chosen_cols], y)],
-                early_stopping_rounds=early_stopping_rounds, patience=patience
-            )
+                if score > self.best_score_:
+                    best_cols = cols
+                    best_score = score
         else:
             best_cols, best_score = self._fit(x, y, eval_set=[(x, y)],
                                               early_stopping_rounds=early_stopping_rounds, patience=patience)
@@ -200,7 +204,7 @@ class TreeSequentialFeatureSelector:
         self.fitted = True
         return self
 
-    @TypeAssert({
+    @ParameterTypeAssert({
         'x': pd.DataFrame,
         'y': pd.Series,
         'eval_set': list,
@@ -330,12 +334,12 @@ class TreeSequentialFeatureSelector:
         return x[self.best_cols_]
 
 
-@TypeAssert({
-    'eval_x': (None, pd.DataFrame),
+@ParameterTypeAssert({
+    'eval_x': (None, pd.DataFrame, np.ndarray),
     'p_threshold': (None, int),
     'reverse': bool,
     'according_to': str,
-    'target': (None, pd.Series)
+    'target': (None, pd.Series, np.ndarray)
 })
 def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, according_to='model', target=None):
     """输出模型重要性的百分比排名， 默认倒序排列
@@ -388,7 +392,7 @@ def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, acco
     ], columns=['features', 'importance_val', 'importance_rate'])
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'exclude_binary_value_column': bool
 })
@@ -399,7 +403,7 @@ def select_numeric_cols(df, exclude_binary_value_column=False):
     return df._get_numeric_data().columns
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'types': (str, list)
 })
@@ -418,7 +422,7 @@ def get_specified_type_cols(df, types):
     return _
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'y_col': (str, list),
     'exclude_cols': (None, str, list)
@@ -445,7 +449,7 @@ def get_x_cols(df, y_col, exclude_cols=None):
     return cols
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'cols': (list, tuple, np.ndarray, pd.Series)
 })

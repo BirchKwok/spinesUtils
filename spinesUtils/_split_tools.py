@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'x_cols': (list, tuple, pd.Series, np.ndarray),
     'y_col': str,
@@ -75,7 +75,7 @@ def train_test_split_bigdata_df(
         df.iloc[X_test_idx, :][[*x_cols, y_col]]
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'x_cols': (list, tuple, pd.Series, np.ndarray),
     'y_col': str,
@@ -144,7 +144,7 @@ def train_test_split_bigdata(
         train_df[y_col].values, valid_df[y_col].values, test_df[y_col].values
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': (pd.DataFrame, np.ndarray),
     'rows_limit': int
 })

@@ -2,11 +2,11 @@ import os
 import sys
 from datetime import datetime
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 
 
 class Printer:
-    @TypeAssert({'name': (None, str), 'fp': (None, str),
+    @ParameterTypeAssert({'name': (None, str), 'fp': (None, str),
                  'verbose': (bool, int), 'truncate_file': bool, 'with_time': bool}, func_name='Printer')
     def __init__(self, name=None, fp=None, verbose=True, truncate_file=True, with_time=True):
         self.name = name
@@ -33,7 +33,7 @@ class Printer:
             return time_str + self.name + ' - '
         return time_str
 
-    @TypeAssert({'string': str, 'access_way': str, 'line_end': (None, str)})
+    @ParameterTypeAssert({'string': str, 'access_way': str, 'line_end': (None, str)})
     def insert2file(self, string, access_way='a', line_end='\n'):
         assert access_way in ('a', 'w')
 
@@ -48,7 +48,7 @@ class Printer:
         with open(self.fp, access_way) as f:
             f.write(self.prefix_format() + string)
 
-    @TypeAssert({'string': str, 'line_end': (None, str)})
+    @ParameterTypeAssert({'string': str, 'line_end': (None, str)})
     def print(self, string, line_end='\n'):
         if not self.verbose:
             return
@@ -62,7 +62,7 @@ class Printer:
         else:
             writer(self.prefix_format() + string)
 
-    @TypeAssert({'string': str, 'access_way': str, 'line_end': (None, str)})
+    @ParameterTypeAssert({'string': str, 'access_way': str, 'line_end': (None, str)})
     def insert_and_throwout(self, string, access_way='a', line_end='\n'):
         self.insert2file(string, access_way, line_end)
         self.print(string)

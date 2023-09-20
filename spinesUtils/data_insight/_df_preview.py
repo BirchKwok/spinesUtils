@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 
 from spinesUtils.feature_tools import select_numeric_cols
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 
 
-@TypeAssert({'df': pd.DataFrame, 'target_col': str, 'groupby': (None, str)})
+@ParameterTypeAssert({'df': pd.DataFrame, 'target_col': str, 'groupby': (None, str)})
 def classify_samples_dist(df, target_col, groupby=None):
     """查看样本分布情况"""
     if groupby is None:
@@ -30,7 +30,7 @@ def classify_samples_dist(df, target_col, groupby=None):
     return res
 
 
-@TypeAssert({'df': pd.DataFrame})
+@ParameterTypeAssert({'df': pd.DataFrame})
 def show_na_inf(df):
     """各列空值、无穷值分布"""
     df_nan_cnt = df.isna().sum(axis=0)
@@ -64,7 +64,7 @@ def show_na_inf(df):
         by=['nan_count', 'inf_count'], ascending=False)
 
 
-@TypeAssert({'dataset': pd.DataFrame, 'indicators': (None, list, tuple)})
+@ParameterTypeAssert({'dataset': pd.DataFrame, 'indicators': (None, list, tuple)})
 def df_preview(dataset, indicators=None):
     """
     For data previews, to check various data properties of the dataset.
@@ -169,7 +169,7 @@ def df_preview(dataset, indicators=None):
         return df
 
 
-@TypeAssert({'df': pd.DataFrame})
+@ParameterTypeAssert({'df': pd.DataFrame})
 def df_simple_view(df):
     """仅浏览数值大小分布"""
     numeric_cols = select_numeric_cols(df)

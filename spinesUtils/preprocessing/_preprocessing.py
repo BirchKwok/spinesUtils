@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm, trange
 
-from spinesUtils.asserts import generate_function_kwargs, TypeAssert
+from spinesUtils.asserts import generate_function_kwargs, ParameterTypeAssert
 from spinesUtils.utils import Printer
 
 
@@ -19,7 +19,7 @@ def show_mem_change(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         logger = Printer(with_time=False)
-        kwargs = generate_function_kwargs(func, args, kwargs)
+        kwargs = generate_function_kwargs(func, *args, **kwargs)
         if isinstance(kwargs.get('dataset'), (list, tuple)):
             assert all([isinstance(i, pd.DataFrame) for i in kwargs['dataset']])
 
@@ -45,6 +45,11 @@ def show_mem_change(func):
 
 
 @show_mem_change
+@ParameterTypeAssert({
+    'dataset': pd.DataFrame,
+    'verbose': (bool, int),
+    'inplace': bool
+})
 def transform_dtypes_low_mem2(dataset, verbose=True, inplace=True):
     """压缩数据, 使用pandas默认方式"""
 
@@ -82,6 +87,11 @@ def transform_dtypes_low_mem2(dataset, verbose=True, inplace=True):
 
 
 @show_mem_change
+@ParameterTypeAssert({
+    'dataset': pd.DataFrame,
+    'verbose': (bool, int),
+    'inplace': bool
+})
 def transform_dtypes_low_mem(dataset, verbose=True, inplace=True):
     """压缩数据"""
 
@@ -145,6 +155,11 @@ def transform_dtypes_low_mem(dataset, verbose=True, inplace=True):
 
 
 @show_mem_change
+@ParameterTypeAssert({
+    'dataset': pd.DataFrame,
+    'verbose': (bool, int),
+    'inplace': bool
+})
 def transform_batch_dtypes_low_mem(dataset, verbose=True, inplace=True):
     """批量缩小pandas.core.dataframe的内存占用"""
     assert isinstance(dataset, (list, tuple))
@@ -163,7 +178,14 @@ def transform_batch_dtypes_low_mem(dataset, verbose=True, inplace=True):
 
 
 @show_mem_change
-def inverse_transform_dtypes(dataset, verbose=True, int_dtypes=np.int32, float_dtypes=np.float32, inplace=True):
+@ParameterTypeAssert({
+    'dataset': pd.DataFrame,
+    'verbose': (bool, int),
+    'int_dtype': (int, np.int8, np.int16, np.int32, np.int64),
+    'float_dtype': (float, np.float16, np.float32, np.float64),
+    'inplace': bool
+})
+def inverse_transform_dtypes(dataset, verbose=True, int_dtype=np.int32, float_dtype=np.float32, inplace=True):
     """
     还原为python格式
     """
@@ -184,13 +206,13 @@ def inverse_transform_dtypes(dataset, verbose=True, int_dtypes=np.int32, float_d
 
     for k in ranger:
         if str(dtypes[k]).startswith('float') and not isinstance(dtypes[k], float):
-            if float_dtypes is None:
-                float_dtypes = float
-            dtypes[k] = float_dtypes
+            if float_dtype is None:
+                float_dtype = float
+            dtypes[k] = float_dtype
         elif str(dtypes[k]).startswith('int') and not isinstance(dtypes[k], int):
-            if int_dtypes is None:
-                int_dtypes = int
-            dtypes[k] = int_dtypes
+            if int_dtype is None:
+                int_dtype = int
+            dtypes[k] = int_dtype
 
     ds.__dict__.update(ds.astype(dtypes).__dict__)
 
@@ -198,7 +220,14 @@ def inverse_transform_dtypes(dataset, verbose=True, int_dtypes=np.int32, float_d
 
 
 @show_mem_change
-def inverse_transform_batch_dtypes(dataset, verbose=True, int_dtypes=np.int32, float_dtypes=np.float32, inplace=True):
+@ParameterTypeAssert({
+    'dataset': pd.DataFrame,
+    'verbose': (bool, int),
+    'int_dtype': (int, np.int8, np.int16, np.int32, np.int64),
+    'float_dtype': (float, np.float16, np.float32, np.float64),
+    'inplace': bool
+})
+def inverse_transform_batch_dtypes(dataset, verbose=True, int_dtype=np.int32, float_dtype=np.float32, inplace=True):
     """
     批量还原为python格式
     """
@@ -212,7 +241,7 @@ def inverse_transform_batch_dtypes(dataset, verbose=True, int_dtypes=np.int32, f
 
     res = []
     for idx in ranger(len(dataset)):
-        res.append(inverse_transform_dtypes(dataset[idx], int_dtypes=int_dtypes,
-                                            float_dtypes=float_dtypes, verbose=False, inplace=inplace))
+        res.append(inverse_transform_dtypes(dataset[idx], int_dtype=int_dtype,
+                                            float_dtype=float_dtype, verbose=False, inplace=inplace))
 
     return res if not inplace else None

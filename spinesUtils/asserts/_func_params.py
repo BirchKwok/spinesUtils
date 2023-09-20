@@ -1,24 +1,26 @@
+import inspect
+from inspect import signature
 
-def get_function_params(func):
+
+def get_function_params_name(func):
     """get parameters of function"""
-    return func.__code__.co_varnames[:func.__code__.co_argcount]
+    return list(signature(func).parameters.keys())
 
 
-def generate_function_kwargs(func, args, kwargs=None):
+def generate_function_kwargs(func, *args, **kwargs):
     new_kwargs = {}
 
     # 获取位置参数
-    func_params = get_function_params(func)
+    func_params = get_function_params_name(func)
 
     for args_param, args_value in zip(func_params[:len(args)], args):
         new_kwargs[args_param] = args_value
 
-    if func.__defaults__ is not None:
-        # 获取默认参数
-        for default_param, default_value in zip(func_params[::-1],
-                                                func.__defaults__[::-1]):
-            if default_param not in new_kwargs:
-                new_kwargs[default_param] = default_value
+    for default_param, default_value in signature(func).parameters.items():
+        if default_value.default is inspect._empty:
+            continue
+        elif default_param not in new_kwargs:
+            new_kwargs[default_param] = default_value.default
 
     for k, v in kwargs.items():
         new_kwargs[k] = v

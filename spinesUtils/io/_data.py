@@ -2,13 +2,11 @@
 from tqdm.auto import tqdm
 
 from spinesUtils.utils import Printer
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 
 
-@TypeAssert({
-    'fp': (None, str),
-    'file_root_path': (None, str),
-    'name_prefix': (None, str),
+@ParameterTypeAssert({
+    'fp': str,
     'sep': str,
     'chunk_size': (None, int),
     'save_as_pkl': bool,
@@ -17,13 +15,16 @@ from spinesUtils.asserts import TypeAssert
     'turbo_method': str,
     'encoding': (None, str),
     'verbose': bool,
-    'pandas_read_csv_kwargs': (None, dict)
+    'read_csv_kwargs': dict
+})
+@ParameterValuesAssert({
+    'turbo_method': ('pandas', 'pyarrow', 'dask', 'polars')
 })
 def dataloader(
-        fp=None, file_root_path=None, name_prefix=None, sep=',',
-        chunk_size=None, save_as_pkl=False, transform2low_mem=True,
-        search_pkl_first=False, turbo_method='auto',
-        encoding='utf8', verbose=False, pandas_read_csv_kwargs=None
+        fp, sep=',', chunk_size=None,
+        save_as_pkl=False, transform2low_mem=True,
+        search_pkl_first=False, turbo_method='polars',
+        encoding='utf8', verbose=False, **read_csv_kwargs
 ):
     """
     :params:
@@ -37,44 +38,39 @@ def dataloader(
     from pathlib import Path
     import pandas as pd
 
-    if fp:
-        (file_root_path, name_prefix) = os.path.split(fp)
-        name_prefix = fp[:-len(Path(fp).suffix)]
+    file_root_path, name_prefix = os.path.split(fp)
+    name_prefix = fp[:-len(Path(fp).suffix)]
 
     pkl_name = os.path.join(file_root_path, name_prefix + '.pkl')
     tsv_name = os.path.join(file_root_path, name_prefix + '.tsv')
     csv_name = os.path.join(file_root_path, name_prefix + '.csv')
     txt_name = os.path.join(file_root_path, name_prefix + '.txt')
 
-    logger = Printer()
+    if not any([os.path.isfile(i) for i in [pkl_name, tsv_name, csv_name, txt_name]]):
+        raise FileNotFoundError("The file should have the extension .pkl, .tsv, .csv, or .txt.")
+
+    logger = Printer(verbose=verbose)
 
     def turbo_reader(fpath, tm):
-        if tm == 'auto':
-            try:
-                try:
-                    from pyarrow.csv import read_csv, ParseOptions, ReadOptions
-                    tm = 'pyarrow'
-                except ImportError:
-                    from dask.dataframe import read_csv
-                    tm = 'dask'
-            except ImportError:
-                from pandas import read_csv
-                tm = 'pandas'
+        if tm == 'polars':
+            from polars import read_csv
+            return read_csv(fpath, separator=sep, encoding=encoding, **read_csv_kwargs).to_pandas()
 
         if tm == 'pyarrow':
             from pyarrow.csv import read_csv, ParseOptions, ReadOptions
             return read_csv(fpath,
                             read_options=ReadOptions(encoding=encoding),
-                            parse_options=ParseOptions(delimiter=sep)).to_pandas()
+                            parse_options=ParseOptions(delimiter=sep), **read_csv_kwargs).to_pandas()
 
         if tm == 'dask':
             from dask.dataframe import read_csv
-            ddf = read_csv(fpath, sep=sep, assume_missing=True, encoding=encoding)
-            return ddf.compute().reset_index(drop=True)
+            return read_csv(
+                fpath, sep=sep, assume_missing=True,
+                encoding=encoding, **read_csv_kwargs).compute().reset_index(drop=True)
 
-        if tm not in ('auto', 'pyarrow', 'dask'):
+        if tm == 'pandas':
             from pandas import read_csv
-            return read_csv(fpath, sep=sep, encoding=encoding)
+            return read_csv(fpath, sep=sep, encoding=encoding, **read_csv_kwargs)
 
     def read_pkl():
         if os.path.isfile(pkl_name):
@@ -97,29 +93,18 @@ def dataloader(
         if chunk_size:
             data = pd.DataFrame()
             if not verbose:
-                iter_pieces = tqdm(pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding), desc="Loading")
+                iter_pieces = tqdm(pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding,
+                                               **read_csv_kwargs), desc="Loading")
             else:
-                iter_pieces = pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding)
+                iter_pieces = pd.read_csv(name, sep=sep, chunksize=chunk_size, encoding=encoding, **read_csv_kwargs)
 
             for _tdf in iter_pieces:
                 if transform2low_mem:
                     from ..preprocessing import transform_dtypes_low_mem
-                    transform_dtypes_low_mem(_tdf, verbose=False)
+                    transform_dtypes_low_mem(_tdf, verbose=False, inplace=True)
                 data = pd.concat((data, _tdf), axis=0)
         else:
-            if turbo_method:
-                data = turbo_reader(name, turbo_method)
-            else:
-                if pandas_read_csv_kwargs is not None:
-                    if 'filepath_or_buffer' in pandas_read_csv_kwargs.keys():
-                        del pandas_read_csv_kwargs['filepath_or_buffer']
-                    if 'sep' in pandas_read_csv_kwargs.keys():
-                        del pandas_read_csv_kwargs['sep']
-
-                if pandas_read_csv_kwargs is not None and len(pandas_read_csv_kwargs) > 0:
-                    data = pd.read_csv(name, sep=sep, encoding=encoding, **pandas_read_csv_kwargs)
-                else:
-                    data = pd.read_csv(name, sep=sep, encoding=encoding)
+            data = turbo_reader(name, turbo_method)
 
         return data
 
@@ -132,12 +117,9 @@ def dataloader(
         if df is None:
             df = read_pkl()
 
-    if df is None:
-        raise FileNotFoundError("The file should have the extension .pkl, .tsv, .csv, or .txt.")
-
     if transform2low_mem:
         from ..preprocessing import transform_dtypes_low_mem
-        transform_dtypes_low_mem(df, verbose=verbose)
+        transform_dtypes_low_mem(df, verbose=verbose, inplace=True)
 
     if save_as_pkl:
         df.to_pickle(pkl_name)

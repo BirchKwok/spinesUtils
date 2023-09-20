@@ -1,17 +1,17 @@
 import numpy as np
 import pandas as pd
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 from spinesUtils.metrics import make_metric
 
 
-@TypeAssert({'y': np.ndarray, 'threshold': float})
+@ParameterTypeAssert({'y': np.ndarray, 'threshold': float})
 def threshold_chosen(y, threshold=0.2):
     """二分类阈值选择法"""
     return (y > threshold).astype(int)
 
 
-@TypeAssert({'df': pd.DataFrame, 'target_col': str, 'decay': int})
+@ParameterTypeAssert({'df': pd.DataFrame, 'target_col': str, 'decay': int})
 def get_sample_weights(df, target_col, decay=1):
     """获取样本权重"""
     _ = {k: v for k, v in df[target_col].value_counts().items()}
@@ -24,9 +24,9 @@ def get_sample_weights(df, target_col, decay=1):
     return [1 if i == max_class else max_class_nums / _dict[i] * decay for i in df[target_col]]
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'x': pd.DataFrame,
-    'y': np.ndarray,
+    'y': (np.ndarray, pd.Series),
     'metric_name': str,
     'maximize': bool,
     'early_stopping': bool,

@@ -1,9 +1,9 @@
 import pandas as pd
 
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert
 
 
-@TypeAssert({'df': pd.DataFrame, 'n_cluster': int, 'dist_algo': str, 'batch_size': int, 'random_state': (None, int)})
+@ParameterTypeAssert({'df': pd.DataFrame, 'n_cluster': int, 'dist_algo': str, 'batch_size': int, 'random_state': (None, int)})
 def make_cluster(df, n_cluster, dist_algo='mini', batch_size=10000, random_state=42):
     import pandas as pd
 
@@ -33,7 +33,7 @@ def make_cluster(df, n_cluster, dist_algo='mini', batch_size=10000, random_state
     return ag
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'df': pd.DataFrame,
     'n_cluster': int,
     'dist_algo': str,

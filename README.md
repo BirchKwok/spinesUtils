@@ -47,7 +47,7 @@ from spinesUtils import transform_dtypes_low_mem, inverse_transform_dtypes
 transform_dtypes_low_mem(your_df, verbose=True)
 
 # uncompress file to python type
-inverse_transform_dtypes(your_df, verbose=True, int_dtypes=int, float_dtypes=float)
+inverse_transform_dtypes(your_df, verbose=True, int_dtype=int, float_dtype=float)
 ```
 
 ```python
@@ -55,13 +55,13 @@ inverse_transform_dtypes(your_df, verbose=True, int_dtypes=int, float_dtypes=flo
 import numpy as np
 from spinesUtils import transform_batch_dtypes_low_mem, inverse_transform_batch_dtypes
 
-your_dfs = [your_df1, your_df2, your_df3] # it can be unlimited
+your_dfs = [your_df1, your_df2, your_df3]  # it can be unlimited
 
 # compresses files to save memory
 transform_batch_dtypes_low_mem(your_dfs, verbose=True)
 
 # uncompress file to numpy type
-inverse_transform_batch_dtypes(your_dfs, verbose=True, int_dtypes=np.int32, float_dtypes=np.float32)
+inverse_transform_batch_dtypes(your_dfs, verbose=True, int_dtype=np.int32, float_dtype=np.float32)
 ```
 
 ## better features selector

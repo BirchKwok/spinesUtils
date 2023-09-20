@@ -3,14 +3,17 @@ import pandas as pd
 from tqdm import tqdm
 
 from spinesUtils.utils import Printer
-from spinesUtils.asserts import TypeAssert
+from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 
 
-@TypeAssert({
-    'samples': pd.Series,
+@ParameterTypeAssert({
+    'samples': pd.DataFrame,
     'threshold': float,
     'use_prob': bool,
     'verbose': (bool, int)
+})
+@ParameterValuesAssert({
+    'threshold': 'lambda s: 0 <= s <= 1'
 })
 def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=0):
     """获取预测为正例的样本"""
@@ -42,8 +45,8 @@ def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=
     return samples.iloc[yp == 1, :].index.tolist()
 
 
-@TypeAssert({
-    'samples': pd.Series,
+@ParameterTypeAssert({
+    'samples': (pd.DataFrame, np.ndarray),
     'columns': (None, list),
     'target': (None, pd.Series),
     'pos_label': int,
@@ -55,6 +58,10 @@ def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=
     'approximate': bool,
     'tree_limit': (None, int),
     'verbose': (bool, int)
+})
+@ParameterValuesAssert({
+    'threshold': 'lambda s: 0 <= s <= 1',
+    'method': ('shap', 'fast', 'lgb')
 })
 def get_samples_shap_val(
         tree_model, samples, columns=None, target=None, pos_label=1, threshold=0.5,
@@ -76,13 +83,9 @@ def get_samples_shap_val(
     logger = Printer(verbose=verbose)
 
     if method == 'fast':
-        try:
-            import fasttreeshap as shap
-            shap_name = 'fast'
+        import fasttreeshap as shap
+        shap_name = 'fast'
 
-        except ImportError:
-            import shap
-            shap_name = 'shap'
     elif method == 'lgb':
         shap_name = 'lgb'
     else:
@@ -169,14 +172,17 @@ def get_samples_shap_val(
     return shap_values, pos_index
 
 
-@TypeAssert({
-    'samples': pd.Series,
+@ParameterTypeAssert({
+    'samples': (pd.DataFrame, np.ndarray),
     'ascending': bool,
     'columns': (None, list),
     'pos_label': int,
-    'target': (None, pd.Series),
+    'target': (None, pd.Series, np.ndarray),
     'threshold': float,
     'use_prob': bool,
+})
+@ParameterValuesAssert({
+    'threshold': 'lambda s: 0 <= s <= 1'
 })
 def sorted_shap_val(
         tree_model, samples,
@@ -198,8 +204,11 @@ def sorted_shap_val(
         return {'idx': np.argsort(shap_sum)[::-1], 'values': shap_sum}
 
 
-@TypeAssert({
+@ParameterTypeAssert({
     'metrics_name': str
+})
+@ParameterValuesAssert({
+    'metrics_name': ('f1', 'recall', 'precision', 'accuracy', 'mse', 'mae', 'r2')
 })
 def make_metric(metrics_name):
     if metrics_name == 'f1':
@@ -214,9 +223,7 @@ def make_metric(metrics_name):
         from sklearn.metrics import mean_squared_error as score_func
     elif metrics_name == 'mae':
         from sklearn.metrics import mean_absolute_error as score_func
-    elif metrics_name == 'r2':
-        from sklearn.metrics import r2_score as score_func
     else:
-        raise ValueError(f"{metrics_name} is invalid.")
+        from sklearn.metrics import r2_score as score_func
 
     return score_func

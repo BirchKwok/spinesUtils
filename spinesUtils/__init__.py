@@ -1,4 +1,4 @@
-__version__ = '0.2.5'
+__version__ = '0.2.8'
 
 
 from .models import BinaryBalanceClassifier
@@ -59,7 +59,8 @@ from .metrics import (
     sorted_shap_val
 )
 from .asserts import (
-    TypeAssert,
-    get_function_params,
-    generate_function_kwargs
+    ParameterTypeAssert,
+    get_function_params_name,
+    generate_function_kwargs,
+    ParameterValuesAssert
 )
