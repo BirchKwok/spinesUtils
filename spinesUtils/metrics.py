@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from spinesUtils.utils import Printer
+from spinesUtils.utils import Logger
 from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 
 
@@ -80,7 +80,7 @@ def get_samples_shap_val(
 
     assert check_additivity != approximate
 
-    logger = Printer(verbose=verbose)
+    logger = Logger(verbose=verbose)
 
     if method == 'fast':
         import fasttreeshap as shap

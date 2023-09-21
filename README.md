@@ -64,22 +64,6 @@ transform_batch_dtypes_low_mem(your_dfs, verbose=True)
 inverse_transform_batch_dtypes(your_dfs, verbose=True, int_dtype=np.int32, float_dtype=np.float32)
 ```
 
-## better features selector
-```python
-from spinesUtils import TreeSequentialFeatureSelector
-from lightgbm import LGBMClassifier
-
-estimator = LGBMClassifier(random_state=0)
-fe = TreeSequentialFeatureSelector(estimator, metrics_name='f1',
-    forward=True,
-    floating=True,
-    log_file_path='feature_selection.log',
-    verbose=True)
-
-fe.fit(your_df[x_cols], your_df[y_col])
-print(fe.best_cols_, fe.best_score_)
-```
-
 ## better train_test_split function
 ```python
 # return numpy.ndarray
@@ -131,17 +115,18 @@ print(
 ```
 
 ## log for human
-```python
-from spinesUtils import Printer
 
-your_logger = Printer(name='your_logger', 
-                      fp='/path/to/your.log', 
-                      verbose=True, 
-                      truncate_file=True, 
-                      with_time=True)
+```python
+from spinesUtils import Logger
+
+your_logger = Logger(name='your_logger',
+                     fp='/path/to/your.log',  # If fp = None, the log file will not be saved
+                     verbose=True,
+                     truncate_file=True,
+                     with_time=True)
 
 your_logger.insert2file("test")  # only insert to log file
-your_logger.print('test') # only print to console
+your_logger.print('test')  # only print to console
 
 # Or you can do it both
 your_logger.insert_and_throwout('test')

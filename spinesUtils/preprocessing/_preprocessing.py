@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm.auto import tqdm, trange
 
 from spinesUtils.asserts import generate_function_kwargs, ParameterTypeAssert
-from spinesUtils.utils import Printer
+from spinesUtils.utils import Logger
 
 
 def show_mem_change(func):
@@ -18,7 +18,7 @@ def show_mem_change(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        logger = Printer(with_time=False)
+        logger = Logger(with_time=False)
         kwargs = generate_function_kwargs(func, *args, **kwargs)
         if isinstance(kwargs.get('dataset'), (list, tuple)):
             assert all([isinstance(i, pd.DataFrame) for i in kwargs['dataset']])

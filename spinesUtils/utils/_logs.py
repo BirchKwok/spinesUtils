@@ -5,7 +5,7 @@ from datetime import datetime
 from spinesUtils.asserts import ParameterTypeAssert
 
 
-class Printer:
+class Logger:
     @ParameterTypeAssert({'name': (None, str), 'fp': (None, str),
                  'verbose': (bool, int), 'truncate_file': bool, 'with_time': bool}, func_name='Printer')
     def __init__(self, name=None, fp=None, verbose=True, truncate_file=True, with_time=True):

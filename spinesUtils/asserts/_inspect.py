@@ -1,4 +1,5 @@
 from functools import wraps
+from types import FunctionType, LambdaType
 from typing import Union
 
 from ._type_and_exceptions import (
@@ -19,6 +20,12 @@ def get_function_all_kwargs(func, func_name, *args, **kwargs):
         raise_params_numbers_error(func, func_name=func_name or func.__name__)
 
     return kwargs
+
+
+def check_obj_is_function(obj):
+    if not augmented_isinstance(obj, (FunctionType, LambdaType)):
+        return False
+    return True
 
 
 class BaseAssert:
@@ -114,13 +121,15 @@ class ParameterValuesAssert(BaseAssert):
         super().check_params_config_type(params_config, func_name)
 
         for v in params_config.values():
-            if augmented_isinstance(v, str) and not v.strip().startswith('lambda '):
+            if augmented_isinstance(v, str) and not check_obj_is_function(eval(v)):
                 raise ParametersValueError("If ParameterValuesAssert.params_config value is string, "
-                                           "it must be lambda function of string-type wrapped, "
-                                           "could be something like 'lambda s: s is True'.")
+                                           "it must be a function of string-type wrapped. ")
+            elif not augmented_isinstance(v, tuple) and not check_obj_is_function(eval(v)):
+                raise ParametersValueError("If ParameterValuesAssert.params_config value is not string or tuple, "
+                                           "it must be a callable function. ")
 
     @staticmethod
-    def params_config_value_type(types=(tuple, str), names='(tuple, str)'):
+    def params_config_value_type(types=(tuple, str, FunctionType, LambdaType), names='(tuple, str, function)'):
         return types, names
 
     def __call__(self, func):

@@ -13,18 +13,6 @@ def iter_count(file_name):
         return sum(buf.count('\n') for buf in buf_gen)
 
 
-def check_has_params(func, params):
-    """检查函数是否有指定形参"""
-    assert isinstance(params, str)
-    import inspect
-    sig = inspect.signature(func)
-    param = sig.parameters.get(params, None)
-    if param is not None:
-        return True
-    else:
-        return False
-
-
 def drop_duplicates_with_order(list_):
     """删除列表中的重复项，只保留第一项"""
     assert isinstance(list_, (list, tuple, np.ndarray))

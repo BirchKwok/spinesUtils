@@ -47,9 +47,9 @@ def auto_search_threshold(x, y, model,
     import numpy as np
     metric = make_metric(metric_name)
 
-    from spinesUtils.utils import Printer
+    from spinesUtils.utils import Logger
 
-    logger = Printer(verbose=verbose)
+    logger = Logger(verbose=verbose)
 
     logger.print("Automatically searching...")
     lr = 0.01

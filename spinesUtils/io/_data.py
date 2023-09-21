@@ -1,7 +1,7 @@
 """数据类"""
 from tqdm.auto import tqdm
 
-from spinesUtils.utils import Printer
+from spinesUtils.utils import Logger
 from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 
 
@@ -49,7 +49,7 @@ def dataloader(
     if not any([os.path.isfile(i) for i in [pkl_name, tsv_name, csv_name, txt_name]]):
         raise FileNotFoundError("The file should have the extension .pkl, .tsv, .csv, or .txt.")
 
-    logger = Printer(verbose=verbose)
+    logger = Logger(verbose=verbose)
 
     def turbo_reader(fpath, tm):
         if tm == 'polars':

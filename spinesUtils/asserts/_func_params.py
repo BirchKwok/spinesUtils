@@ -26,3 +26,13 @@ def generate_function_kwargs(func, *args, **kwargs):
         new_kwargs[k] = v
 
     return new_kwargs
+
+
+def check_has_params(func, params):
+    """检查函数是否有指定形参"""
+    sig = inspect.signature(func)
+    param = sig.parameters.get(params, None)
+    if param is not None:
+        return True
+    else:
+        return False

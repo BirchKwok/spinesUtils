@@ -3,7 +3,7 @@ import numpy as np
 from frozendict import frozendict
 
 from spinesUtils.asserts import ParameterTypeAssert
-from spinesUtils.utils import Printer
+from spinesUtils.utils import Logger
 
 
 class BinaryBalanceClassifier:
@@ -26,7 +26,7 @@ class BinaryBalanceClassifier:
         self._classes = 2
         self.auto_threshold = {'Model L2': 0, 'Model L3': 0}
         
-        self.logger = Printer(verbose=verbose)
+        self.logger = Logger(verbose=verbose)
 
     @ParameterTypeAssert({
         'X_train': (np.ndarray, pd.DataFrame),

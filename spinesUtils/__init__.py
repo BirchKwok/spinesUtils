@@ -19,7 +19,6 @@ from .data_insight import (
 from .feature_tools import (
     variation_threshold,
     vars_threshold,
-    TreeSequentialFeatureSelector,
     feature_importances,
     select_numeric_cols,
     get_specified_type_cols,
@@ -45,13 +44,12 @@ from ._thresholds import (
 
 from .utils import (
     iter_count,
-    check_has_params,
     drop_duplicates_with_order,
     get_file_md5,
     check_files_fingerprint,
     folder_iter,
     find_same_file,
-    Printer
+    Logger
 )
 from .metrics import (
     get_samples_shap_val,
