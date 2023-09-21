@@ -1,1 +1,1 @@
-from ._data import dataloader
+from ._data import read_csv

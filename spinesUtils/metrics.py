@@ -17,7 +17,7 @@ from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 })
 def pos_pred_sample(tree_model, samples, threshold=0.5, use_prob=False, verbose=0):
     """获取预测为正例的样本"""
-    from ._split_tools import df_block_split
+    from spinesUtils.preprocessing._split_tools import df_block_split
 
     # 分割样本
     samples_list = df_block_split(samples, rows_limit=10000)

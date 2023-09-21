@@ -3,7 +3,7 @@ __version__ = '0.2.8'
 
 from .models import BinaryBalanceClassifier
 from ._cluster import make_cluster, plot_cluster_res
-from .io import dataloader
+from .io import read_csv
 from ._decorators import (
     timing_decorator,
     retry,
@@ -29,9 +29,7 @@ from .preprocessing import (
     transform_dtypes_low_mem,
     transform_batch_dtypes_low_mem,
     inverse_transform_dtypes,
-    inverse_transform_batch_dtypes
-)
-from ._split_tools import (
+    inverse_transform_batch_dtypes,
     train_test_split_bigdata,
     train_test_split_bigdata_df,
     df_block_split

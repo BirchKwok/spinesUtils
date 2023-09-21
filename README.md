@@ -10,16 +10,17 @@ pip install spinesUtils
 ```
 
 ## better CSV dataloader
-```python
-from spinesUtils import dataloader
 
-your_df = dataloader(
+```python
+from spinesUtils import read_csv
+
+your_df = read_csv(
     fp='/path/to/your/file.csv',
     sep=',',  # equal to pandas read_csv.sep
-    turbo_method='pyarrow', # use turbo_method to speed up load time
-    chunk_size=None, # it can be integer if you want to use pandas backend
-    save_as_pkl=False, # if you want to save the file as pickle, it can speed up next load time
-    transform2low_mem=True, # it can compresses file to save more memory
+    turbo_method='pyarrow',  # use turbo_method to speed up load time
+    chunk_size=None,  # it can be integer if you want to use pandas backend
+    save_as_pkl=False,  # if you want to save the file as pickle, it can speed up next load time
+    transform2low_mem=True,  # it can compresses file to save more memory
     verbose=False
 )
 

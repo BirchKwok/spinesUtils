@@ -20,7 +20,7 @@ from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 @ParameterValuesAssert({
     'turbo_method': ('pandas', 'pyarrow', 'dask', 'polars')
 })
-def dataloader(
+def read_csv(
         fp, sep=',', chunk_size=None,
         save_as_pkl=False, transform2low_mem=True,
         search_pkl_first=False, turbo_method='polars',
