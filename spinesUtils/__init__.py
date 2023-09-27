@@ -1,4 +1,4 @@
-__version__ = '0.2.8'
+__version__ = '0.3.0'
 
 
 from .models import BinaryBalanceClassifier
@@ -40,15 +40,8 @@ from ._thresholds import (
     auto_search_threshold
 )
 
-from .utils import (
-    iter_count,
-    drop_duplicates_with_order,
-    get_file_md5,
-    check_files_fingerprint,
-    folder_iter,
-    find_same_file,
-    Logger
-)
+import spinesUtils.utils as utils
+
 from .metrics import (
     get_samples_shap_val,
     pos_pred_sample,
@@ -60,3 +53,5 @@ from .asserts import (
     generate_function_kwargs,
     ParameterValuesAssert
 )
+
+import spinesUtils._memory_reduction as memory_reduction

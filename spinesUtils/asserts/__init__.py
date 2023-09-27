@@ -8,4 +8,8 @@ from ._func_params import (
     generate_function_kwargs,
     check_has_params
 )
-from ._type_and_exceptions import ParametersTypeError, augmented_isinstance, ParametersValueError
+from ._type_and_exceptions import (
+    ParametersTypeError,
+    augmented_isinstance,
+    ParametersValueError
+)

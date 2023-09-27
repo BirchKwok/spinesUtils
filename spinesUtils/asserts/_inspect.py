@@ -124,7 +124,7 @@ class ParameterValuesAssert(BaseAssert):
             if augmented_isinstance(v, str) and not check_obj_is_function(eval(v)):
                 raise ParametersValueError("If ParameterValuesAssert.params_config value is string, "
                                            "it must be a function of string-type wrapped. ")
-            elif not augmented_isinstance(v, tuple) and not check_obj_is_function(eval(v)):
+            elif not augmented_isinstance(v, (tuple, str)) and not check_obj_is_function(v):
                 raise ParametersValueError("If ParameterValuesAssert.params_config value is not string or tuple, "
                                            "it must be a callable function. ")
 
