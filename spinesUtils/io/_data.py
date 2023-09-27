@@ -22,7 +22,7 @@ def read_csv(
         fp,
         sep=',',
         chunk_size=None,
-        transform2low_mem=True,
+        transform2low_mem=False,
         turbo_method='polars',
         encoding='utf8',
         verbose=False,
