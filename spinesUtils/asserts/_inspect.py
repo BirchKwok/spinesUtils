@@ -1,3 +1,4 @@
+import inspect
 from functools import wraps
 from types import FunctionType, LambdaType
 from typing import Union
@@ -155,10 +156,14 @@ class ParameterValuesAssert(BaseAssert):
             if len(res) > 0:
                 prefix_str = f"Function '{self.func_name}' parameter(s) values mismatch: "
 
+                get_name = lambda s: s if augmented_isinstance(s, (str, tuple)) else "\n" + inspect.getsource(
+                    s).strip()
                 raise ParametersValueError(prefix_str +
                                            ', '.join(
-                                               [f"`{i}` must in or satisfy '{self.params_config[i]}' condition(s)"
-                                                for i in res]) + '.')
+                                               [
+                                                   f"`{i}` must in or satisfy '{get_name(self.params_config[i])}' "
+                                                   "condition(s)"
+                                                   for i in res]) + '.')
 
             return func(**kwargs)
 
