@@ -145,8 +145,11 @@ class ParameterValuesAssert(BaseAssert):
                 if augmented_isinstance(p_values, tuple):
                     if p_name in kwargs and not kwargs[p_name] in p_values:
                         res.append(p_name)
-                else:
+                elif augmented_isinstance(p_values, str):
                     if callable(eval(p_values)) and not eval(p_values)(kwargs[p_name]):
+                        res.append(p_name)
+                else:
+                    if not p_values(kwargs[p_name]):
                         res.append(p_name)
 
             if len(res) > 0:
