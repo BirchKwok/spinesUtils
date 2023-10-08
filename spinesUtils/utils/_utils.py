@@ -71,4 +71,37 @@ def find_same_file(filename, to_find_path, absolute_path=False):
     if len(flist) > 0:
         return flist
     
-    return 
+    return
+
+
+def is_in_ipython():
+    """当前环境是否为ipython"""
+    import sys
+
+    is_ipython = 'ipykernel' in sys.modules or 'IPython' in sys.modules
+
+    if is_ipython:
+        return True
+    else:
+        return False
+
+
+def reindex_iterable_object(obj, key=None, index_start=0):
+    """对可迭代对象进行内部分组和重新索引
+
+    :parameter
+        obj: 可迭代对象
+        key: 分组依据
+        index_start: 索引起始值
+
+    :return
+        list[*tuple(index, value)]
+
+    """
+    from itertools import groupby
+
+    sorted_obj = sorted(obj, key=key)  # 对列表进行排序
+    grouped_obj = [list(group) for key, group in groupby(sorted_obj, key=key)]  # 对排序后的列表进行分组
+
+    for group in grouped_obj:
+        yield [(idx, g) for idx, g in enumerate(group, start=index_start)]
