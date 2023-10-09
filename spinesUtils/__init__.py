@@ -1,4 +1,4 @@
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 
 
 from .models import BinaryBalanceClassifier
@@ -53,5 +53,3 @@ from .asserts import (
     generate_function_kwargs,
     ParameterValuesAssert
 )
-
-import spinesUtils._memory_reduction as memory_reduction

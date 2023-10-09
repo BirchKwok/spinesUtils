@@ -2,7 +2,6 @@
 from tqdm.auto import tqdm
 
 from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
-from spinesUtils._memory_reduction import memory_reduction
 
 
 @ParameterTypeAssert({
@@ -17,7 +16,6 @@ from spinesUtils._memory_reduction import memory_reduction
 @ParameterValuesAssert({
     'turbo_method': ('pandas', 'pyarrow', 'dask', 'polars')
 })
-@memory_reduction
 def read_csv(
         fp,
         sep=',',
