@@ -27,3 +27,18 @@ def raise_params_numbers_error(func, func_name):
     from ._func_params import get_function_params_name
     raise ParametersTypeError(f"Function {func_name} only "
                               f"accept {len(get_function_params_name(func))} parameter(s)")
+
+
+def raise_if(exception, condition, error_msg):
+    assert issubclass(exception, BaseException), "Exception must be a subclass of BaseException."
+
+    if condition:
+        raise exception(error_msg)
+
+
+def raise_if_not(exception, condition, error_msg):
+    assert issubclass(exception, BaseException), "Exception must be a subclass of BaseException."
+
+    if not condition:
+        raise exception(error_msg)
+
