@@ -11,5 +11,7 @@ from ._func_params import (
 from ._type_and_exceptions import (
     ParametersTypeError,
     augmented_isinstance,
-    ParametersValueError
+    ParametersValueError,
+    raise_if,
+    raise_if_not
 )
