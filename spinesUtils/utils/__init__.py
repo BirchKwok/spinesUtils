@@ -6,6 +6,7 @@ from ._utils import (
     folder_iter,
     find_same_file,
     is_in_ipython,
-    reindex_iterable_object
+    reindex_iterable_object,
+    Timer
 )
 from ._logs import Logger

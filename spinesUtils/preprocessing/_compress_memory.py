@@ -1,4 +1,6 @@
 import re
+import gc
+import time
 from functools import wraps, reduce
 
 import numpy as np
@@ -245,3 +247,22 @@ def inverse_transform_batch_dtypes(dataset, verbose=True, int_dtype=np.int32, fl
                                             float_dtype=float_dtype, verbose=False, inplace=inplace))
 
     return res if not inplace else None
+
+
+def gc_collector(wait_secs=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            res = func(*args, **kwargs)
+            # 清理垃圾
+            gc.collect()
+            gc.garbage.clear()
+
+            if wait_secs > 0:
+                time.sleep(wait_secs)  # 休眠等待
+
+            return res
+
+        return wrapper
+
+    return decorator
