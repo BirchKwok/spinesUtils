@@ -1,15 +1,13 @@
 import numpy as np
 import torch
 
-from spinesUtils.asserts import ParameterTypeAssert, check_obj_is_function, ParameterValuesAssert
+from spinesUtils.asserts import ParameterTypeAssert
 
 
 @ParameterTypeAssert({
     'data': (np.ndarray, torch.Tensor),
+    'condition': bool,
     'shape': tuple
-})
-@ParameterValuesAssert({
-    'condition': lambda s: check_obj_is_function(s)
 })
 def reshape_if(data, condition, shape):
     """
@@ -22,10 +20,8 @@ def reshape_if(data, condition, shape):
 
 @ParameterTypeAssert({
     'data': (np.ndarray, torch.Tensor),
+    'condition': bool,
     'shape': tuple
-})
-@ParameterValuesAssert({
-    'condition': lambda s: check_obj_is_function(s)
 })
 def squeeze_if(data, condition, dim=None):
     """
@@ -38,10 +34,8 @@ def squeeze_if(data, condition, dim=None):
 
 @ParameterTypeAssert({
     'data': (np.ndarray, torch.Tensor),
+    'condition': bool,
     'shape': tuple
-})
-@ParameterValuesAssert({
-    'condition': lambda s: check_obj_is_function(s)
 })
 def unsqueeze_if(data, condition, dim=None):
     """
