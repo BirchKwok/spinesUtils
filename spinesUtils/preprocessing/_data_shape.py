@@ -21,7 +21,7 @@ def reshape_if(data, condition, shape):
 @ParameterTypeAssert({
     'data': (np.ndarray, torch.Tensor),
     'condition': bool,
-    'shape': tuple
+    'dim': (None, int)
 })
 def squeeze_if(data, condition, dim=None):
     """
@@ -35,7 +35,7 @@ def squeeze_if(data, condition, dim=None):
 @ParameterTypeAssert({
     'data': (np.ndarray, torch.Tensor),
     'condition': bool,
-    'shape': tuple
+    'dim': (None, int)
 })
 def unsqueeze_if(data, condition, dim=None):
     """
