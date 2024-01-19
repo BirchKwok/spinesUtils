@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from numba import jit
 
 from spinesUtils.feature_tools import select_numeric_cols
 from spinesUtils.asserts import ParameterTypeAssert
@@ -7,7 +8,32 @@ from spinesUtils.asserts import ParameterTypeAssert
 
 @ParameterTypeAssert({'df': pd.DataFrame, 'target_col': str, 'groupby': (None, str)})
 def classify_samples_dist(df, target_col, groupby=None):
-    """查看样本分布情况"""
+    """
+    Analyzes the distribution of samples in a DataFrame, either overall or grouped by another column.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to analyze.
+    target_col : str
+        The name of the column in the DataFrame for which the distribution is calculated.
+    groupby : str, optional
+        The name of the column to group the data by before calculating the distribution.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame with the count and rate of each unique value in the target column.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'group': ['A', 'A', 'B', 'B', 'C'], 'value': [1, 1, 2, 2, 3]})
+    >>> classify_samples_dist(df, 'value')
+       sample_count   rate
+    1             2  40.0%
+    2             2  40.0%
+    3             1  20.0%
+    """
     if groupby is None:
         _ = df[target_col].value_counts()
 
@@ -32,7 +58,27 @@ def classify_samples_dist(df, target_col, groupby=None):
 
 @ParameterTypeAssert({'df': pd.DataFrame})
 def show_na_inf(df):
-    """各列空值、无穷值分布"""
+    """
+    Displays the distribution of NaN and infinity values across all columns in the DataFrame.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to analyze for NaN and infinity values.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame with the counts and percentages of NaN and infinity values per column.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, np.nan, np.inf], 'B': [np.nan, np.nan, 3]})
+    >>> show_na_inf(df)
+        columns nan_percent nan_count inf_percent inf_count
+    A        A        33.33%         1       33.33%        1
+    B        B        66.67%         2         0.0%        0
+    """
     df_nan_cnt = df.isna().sum(axis=0)
     df_inf_cnt = (df == np.inf).sum(axis=0)
 
@@ -67,21 +113,43 @@ def show_na_inf(df):
 @ParameterTypeAssert({'dataset': pd.DataFrame, 'indicators': (None, list, tuple)})
 def df_preview(dataset, indicators=None):
     """
-    For data previews, to check various data properties of the dataset.
-    returns:
-    total: number of elements
-    na: null values
-    naPercent: null value accounts for this ratio
-    nunique: unique values number
-    dtype: datatype
-    75%: 75% quantile
-    25%: 25% quantile
-    variation: variation ratio
-    std: standard deviation
-    skew: Skewness
-    kurt: Kurtosis
-    samples: Random returns two values
+    Provides a statistical summary of the dataset with an option to specify which metrics to include.
+
+    Parameters
+    ----------
+    dataset : pandas.DataFrame
+        The DataFrame to summarize.
+    indicators : list of str, optional
+        The statistical metrics to include in the summary.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame summarizing the specified statistical metrics for each column.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+    >>> df_preview(df, indicators=['mean', 'std'])
+       mean   std
+    A   2.0   1.0
+    B   5.0   1.0
     """
+
+    @jit(nopython=True, fastmath=True)
+    def calculate_skewness_kurtosis(data, mean, std):
+        var = std ** 2
+        # std = np.sqrt(var)
+
+        # 计算三阶和四阶中心矩
+        third_moment = np.mean((data - mean) ** 3)
+        fourth_moment = np.mean((data - mean) ** 4)
+
+        # 计算偏度和峰度
+        skewness = third_moment / (std ** 3)
+        kurtosis = fourth_moment / (var ** 2) - 3
+
+        return skewness, kurtosis
 
     available_indicators = (
         'total', 'na', 'naPercent', 'nunique', 'dtype', 'max', '75%', 'median',
@@ -133,7 +201,7 @@ def df_preview(dataset, indicators=None):
             if 'na' in indicators or 'naPercent' in indicators:
                 na_sum = ind_len - desc['count']
 
-                global_params['na'] = na_sum
+                global_params['na'] = int(na_sum)
                 global_params['naPercent'] = na_sum / ind_len
 
             if 'mode' in indicators or 'variation' in indicators:
@@ -155,23 +223,44 @@ def df_preview(dataset, indicators=None):
         if 'samples' in indicators:
             global_params['samples'] = tuple([i_data[idx] for idx in random_idx])
 
-        if 'skew' in indicators:
-            global_params['skew'] = i_data.skew() if i in num_cols else np.nan
-
-        if 'kurt' in indicators:
-            global_params['kurt'] = i_data.kurt() if i in num_cols else np.nan
+        if 'skew' in indicators and 'kurt' in indicators:
+            if i not in num_cols:
+                global_params['skew'] = None
+                global_params['kurt'] = None
+            else:
+                global_params['skew'], global_params['kurt'] = calculate_skewness_kurtosis(
+                    i_data.values, global_params['mean'], global_params['std'])
+        elif 'skew' in indicators:
+            global_params['skew'] = i_data.skew() if i in num_cols else None
+        elif 'kurt' in indicators:
+            global_params['kurt'] = i_data.kurt() if i in num_cols else None
 
         df.loc[i] = pd.Series({k: global_params[k] for k in indicators}, name=i)
 
-    if df.shape[0] < df.shape[1]:
-        return df.T
-    else:
-        return df
+    return df
 
 
 @ParameterTypeAssert({'df': pd.DataFrame})
 def df_simple_view(df):
-    """仅浏览数值大小分布"""
+    """
+    Provides a simple statistical view of the numeric columns in the DataFrame, highlighting the mean and standard deviation.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to visualize.
+
+    Returns
+    -------
+    pandas.io.formats.style.Styler
+        A Styler object that can be rendered in Jupyter Notebooks to display the DataFrame with conditional formatting.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+    >>> df_simple_view(df)
+    # This will return a styled DataFrame when used in a Jupyter Notebook.
+    """
     numeric_cols = select_numeric_cols(df)
     return df[numeric_cols].describe().T.sort_values('std', ascending=False) \
         .style.bar(subset=['mean'], color='#7BCC70') \

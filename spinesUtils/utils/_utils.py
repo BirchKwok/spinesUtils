@@ -1,12 +1,31 @@
-"""工具文件"""
+import hashlib
 import os
-import time
-
-import numpy as np
 
 
 def iter_count(file_name):
-    """统计文件行数"""
+    """
+    Count the number of lines in a file efficiently by reading in large blocks.
+
+    Parameters
+    ----------
+    file_name : str
+        The path to the file whose lines are to be counted.
+
+    Returns
+    -------
+    int
+        The number of lines in the file.
+
+    Notes
+    -----
+    This function reads the file in blocks (default size: 1 MB) to efficiently
+    handle large files.
+
+    Examples
+    --------
+    >>> iter_count_v0('large_file.txt')
+    1000000
+    """
     from itertools import (takewhile, repeat)
     buffer = 1024 * 1024
     with open(file_name) as f:
@@ -14,89 +33,222 @@ def iter_count(file_name):
         return sum(buf.count('\n') for buf in buf_gen)
 
 
-def drop_duplicates_with_order(list_):
-    """删除列表中的重复项，只保留第一项"""
-    assert isinstance(list_, (list, tuple, np.ndarray))
-    indices = set()
-    for idx in range(len(list_)-1, 0, -1):
-        current_val = list_[idx]
-        if current_val in list_[:idx]:
-            indices.add(idx)
-    return [list_[i] for i in range(len(list_)) if i not in indices]
+def drop_duplicates_with_order(seq):
+    """Remove duplicate elements from a sequence while preserving the order of the remaining elements.
+
+    Parameters
+    ----------
+    seq : list, tuple, or ndarray
+        The sequence from which duplicate elements are to be removed.
+
+    Returns
+    -------
+    list
+        A list containing the elements of the original sequence with duplicates removed.
+
+    Notes
+    -----
+    This function iterates over the input sequence in reverse order, allowing it to
+    remove duplicates while preserving the order of the first occurrences.
+
+    Examples
+    --------
+    >>> drop_duplicates_with_order([1, 2, 2, 3, 2, 4, 3])
+    [1, 2, 3, 4]
+    """
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 
 def get_file_md5(filename):
-    """获取文件的MD5值"""
-    import hashlib
-    md5 = hashlib.md5()
-    with open(filename, 'rb') as f:
-        while True:
-            data = f.read(1024 * 1024)
-            if not data:
-                break
-            md5.update(data)
-    return md5.hexdigest()
+    """
+    Calculate and return the MD5 hash of a file.
+
+    Parameters
+    ----------
+    filename : str
+        The path to the file whose MD5 hash is to be computed.
+
+    Returns
+    -------
+    str or None
+        The MD5 hash of the file as a hexadecimal string. Returns None if an error occurs.
+
+    Examples
+    --------
+    >>> get_file_md5("example.txt")
+    'd41d8cd98f00b204e9800998ecf8427e'
+
+    Note: The actual output will vary depending on the content of 'example.txt'.
+    """
+    try:
+        md5 = hashlib.md5()
+        with open(filename, 'rb') as f:
+            for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                md5.update(chunk)
+        return md5.hexdigest()
+    except IOError as e:
+        print(f"Error reading file {filename}: {e}")
+        return None
 
 
 def check_files_fingerprint(filename1, filename2):
-    """比较两个文件指纹是否相等"""
-    if get_file_md5(filename1) == get_file_md5(filename2):
-        return True
-    else:
-        return False
+    """
+    Check if two files have the same MD5 fingerprint (hash).
+
+    Parameters
+    ----------
+    filename1 : str
+        The path to the first file.
+    filename2 : str
+        The path to the second file.
+
+    Returns
+    -------
+    bool
+        True if both files have the same MD5 hash, False otherwise.
+
+    Examples
+    --------
+    >>> check_files_fingerprint("file1.txt", "file2.txt")
+    False
+
+    Note: The actual output will depend on the contents of 'file1.txt' and 'file2.txt'.
+    """
+    return get_file_md5(filename1) == get_file_md5(filename2)
 
 
 def folder_iter(folder_path):
-    """迭代取出父文件夹下所有子文件夹的文件"""
-    assert os.path.isdir(folder_path)
-    folder_path = 'model_tools'
+    """
+    Iterate over all files in a given folder, including files in subfolders.
+
+    Parameters
+    ----------
+    folder_path : str
+        The path to the folder.
+
+    Yields
+    ------
+    str
+        The path to each file within the folder.
+
+    Raises
+    ------
+    ValueError
+        If the folder_path is not a directory.
+
+    Examples
+    --------
+    >>> for file_path in folder_iter("sample_folder"):
+    ...     print(file_path)
+    sample_folder/file1.txt
+    sample_folder/subfolder/file2.txt
+    """
+    if not os.path.isdir(folder_path):
+        raise ValueError(f"{folder_path} is not a directory.")
 
     for dirpath, dirnames, filenames in os.walk(folder_path):
         for filename in filenames:
-            file_path = os.path.join(dirpath, filename)
-            yield file_path
+            yield os.path.join(dirpath, filename)
 
 
 def find_same_file(filename, to_find_path, absolute_path=False):
-    """寻找对应目录下是否有相同指纹的文件"""
+    """
+    Find files with the same MD5 fingerprint as the given file in a specified directory.
 
+    Parameters
+    ----------
+    filename : str
+        The path to the file to compare.
+    to_find_path : str
+        The path to the directory where to search for files.
+    absolute_path : bool, default=False
+        If True, returns absolute paths of the files found.
+
+    Returns
+    -------
+    list of str
+        A list of paths to files that have the same MD5 hash as the given file.
+
+    Examples
+    --------
+    >>> find_same_file("example.txt", "to_find_folder")
+    ['to_find_folder/example_copy.txt']
+
+    Note: The actual output will depend on the contents of 'example.txt' and the files in 'to_find_folder'.
+    """
     flist = []
-
     for filename2 in folder_iter(to_find_path):
         if check_files_fingerprint(filename, filename2):
-            if not absolute_path:
-                flist.append(filename2)
-            else:
-                flist.append(os.path.abspath(filename2))
-    
-    if len(flist) > 0:
-        return flist
-    
-    return
+            flist.append(os.path.abspath(filename2) if absolute_path else filename2)
+    return flist
 
 
 def is_in_ipython():
-    """当前环境是否为ipython"""
-    import sys
-
-    is_ipython = 'ipykernel' in sys.modules or 'IPython' in sys.modules
-
-    if is_ipython:
-        return True
-    else:
+    """判断是否在ipython环境下"""
+    try:
+        from IPython import get_ipython
+        if 'IPKernelApp' not in get_ipython().config:
+            return False
+    except (ImportError, AttributeError):
         return False
+    return True
 
 
 def reindex_iterable_object(obj, key=None, index_start=0):
-    """对可迭代对象进行内部分组和重新索引
+    """Groups and reindexes elements within an iterable object.
+    It sorts the elements based on a given key, groups them by this key, and enumerates each element in its group
+        from a specified starting index.
 
-    :parameter
-        obj: 可迭代对象
-        key: 分组依据
-        index_start: 索引起始值
+    Parameters
+    ----------
+    obj : iterable object
+        The object to be reindexed.
+    key : function, optional
+        A function that returns a key to group the elements by. If not specified, the elements will be grouped by
+            themselves.
+    index_start : int, optional
+        The starting index for each element in its group.
 
-    :return
-        list[*tuple(index, value)]
+    Returns
+    -------
+    generator
+        A generator that yields the reindexed elements.
+
+    Examples
+    --------
+    >>> # Example 1: Group by Odd and Even Numbers
+    >>> numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    >>> reindexed = list(reindex_iterable_object(numbers, key=lambda x: x % 2 == 0))
+    >>> for group in reindexed:
+    ...     print(group)
+
+    [(0, 1), (1, 3), (2, 5), (3, 7), (4, 9)]
+    [(0, 2), (1, 4), (2, 6), (3, 8)]
+
+    >>> # Example 2: Group by the First Letter of a String
+    >>> strings = ['apple', 'banana', 'pear', 'grape', 'orange', 'watermelon']
+    >>> reindexed = list(reindex_iterable_object(strings, key=lambda x: x[0]))
+    >>> for group in reindexed:
+    ...     print(group)
+
+    [(0, 'apple')]
+    [(0, 'banana')]
+    [(0, 'grape')]
+    [(0, 'orange')]
+    [(0, 'pear')]
+    [(0, 'watermelon')]
+
+    >>> # Example 3: Group by the Length of a String
+    >>> strings = ['apple', 'banana', 'pear', 'grape', 'orange', 'watermelon']
+    >>> reindexed = list(reindex_iterable_object(strings, key=lambda x: len(x)))
+    >>> for group in reindexed:
+    ...     print(group)
+
+    [(0, 'apple'), (1, 'pear'), (2, 'grape')]
+    [(0, 'banana'), (1, 'orange')]
+    [(0, 'watermelon')]
 
     """
     from itertools import groupby
@@ -108,59 +260,55 @@ def reindex_iterable_object(obj, key=None, index_start=0):
         yield [(idx, g) for idx, g in enumerate(group, start=index_start)]
 
 
-class Timer:
-    """秒数为单位"""
-    def __init__(self):
-        self._start_time = None
-        self._middle_points = []
+def get_env_variable(name, default=None, default_type=str):
+    """
+    Retrieves an environment variable, casts its value to a specified type, and returns it.
+    If the environment variable is not set or if the type casting fails, a default value is returned.
 
-    def check_is_started(self):
-        if self._start_time is None:
-            raise RuntimeError("Timer is not started.")
+    Parameters
+    ----------
+    name : str
+        The name of the environment variable to retrieve.
+    default : optional
+        The default value to return if the environment variable is not set or if type casting fails.
+        Default is None.
+    default_type : type, optional (default=str)
+        The type to which the environment variable's value should be cast. Default is str.
 
-    def start(self):
-        """全局开始"""
-        self._start_time = time.time()
-        return self
+    Returns
+    -------
+    default_type or type of 'default'
+        The value of the environment variable cast to 'default_type', or the 'default' value
+        if the environment variable is not set or casting fails.
 
-    def middle_point(self):
-        """中间点"""
-        self.check_is_started()
-        self._middle_points.append(time.time())
-        return self
+    Examples
+    --------
+    # Assuming the environment variable 'EXAMPLE_VAR' is not set
+    >>> get_env_variable('EXAMPLE_VAR', default=10, default_type=int)
+    10
 
-    def end(self):
-        """全局结束"""
-        self.check_is_started()
+    # Assuming the environment variable 'EXAMPLE_VAR' is set to '5'
+    >>> get_env_variable('EXAMPLE_VAR', default=10, default_type=int)
+    5
 
-        time_diff = time.time() - self._start_time
+    # Assuming the environment variable 'EXAMPLE_VAR' is set to 'invalid'
+    >>> get_env_variable('EXAMPLE_VAR', default=10, default_type=int)
+    10  # Returns the default value since casting fails
+    """
+    import os
 
-        self._start_time = None
-        self._middle_points = []
-        return time_diff
+    def type_cast(v):
+        if v is None:
+            return default  # 如果环境变量未设置，则返回默认值
+        try:
+            # 尝试类型转换，如果失败则捕获异常并返回默认值
+            return default_type(v)
+        except Exception:
+            return default
 
-    def last_timestamp_diff(self):
-        """上一点时间"""
-        self.check_is_started()
+    # 从环境变量中获取值，如果未设置则使用 None
+    value = os.environ.get(name)
 
-        if len(self._middle_points) == 0:
-            return time.time() - self._start_time
+    # 对获取的值进行类型转换
+    return type_cast(value)
 
-        time_diff = time.time() - self._middle_points[-1]
-        return time_diff
-
-    def clear(self):
-        """重置Timer"""
-        self.check_is_started()
-
-        self._start_time = None
-        self._middle_points = []
-        return self
-
-    def sleep(self, secs):
-        """睡眠"""
-        self.check_is_started()
-
-        time.sleep(secs)
-        self._middle_points.append(time.time())
-        return self

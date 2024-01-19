@@ -7,6 +7,5 @@ from ._utils import (
     find_same_file,
     is_in_ipython,
     reindex_iterable_object,
-    Timer
+    get_env_variable
 )
-from ._logs import Logger

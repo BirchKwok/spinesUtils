@@ -6,7 +6,7 @@ from ._inspect import (
 from ._func_params import (
     get_function_params_name,
     generate_function_kwargs,
-    check_has_params
+    check_has_param
 )
 from ._type_and_exceptions import (
     ParametersTypeError,

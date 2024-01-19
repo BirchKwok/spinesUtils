@@ -1,1 +1,1 @@
-from ._balance_model import BinaryBalanceClassifier
+from .imbalanced_classifier import MultiClassBalanceClassifier

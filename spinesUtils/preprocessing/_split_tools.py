@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from spinesUtils.asserts import ParameterTypeAssert
 
@@ -28,51 +29,81 @@ def train_test_split_bigdata_df(
         stratify=None,
         reset_index=True
 ):
-    """切割大型数据集
-    
-    默认返回三个数据集: 训练集、验证集、测试集, 数据集包含y_col
+    """
+    Splits a large pandas DataFrame into train, validation, and test sets, with an option to stratify.
 
-    训练集、验证集、测试集默认比例为 8:1:1
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to be split.
+    x_cols : list, tuple, pandas.Series, numpy.ndarray
+        The column names to be used as features.
+    y_col : str
+        The column name to be used as the target variable.
+    shuffle : bool, optional (default=True)
+        Whether to shuffle the data before splitting.
+    return_valid : bool, optional (default=True)
+        Whether to return a validation set.
+    random_state : None or int, optional (default=42)
+        The random state for shuffling.
+    train_size : float, optional (default=0.8)
+        The proportion of the dataset to include in the train split.
+    valid_size : float, optional (default=0.5)
+        The proportion of the validation set in the remaining data after the train split.
+    stratify : list, tuple, pandas.Series, numpy.ndarray, or None, optional
+        The data to use for stratifying the split.
+    reset_index : bool, optional (default=True)
+        If True, the index of the resulting DataFrames is reset.
+
+    Returns
+    -------
+    tuple of pandas.DataFrame
+        The train, validation, and test DataFrames.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'feature1': range(100), 'feature2': range(100), 'target': range(100)})
+    >>> train_df, valid_df, test_df = train_test_split_bigdata_df(df, x_cols=['feature1', 'feature2'], y_col='target', shuffle=True, random_state=42)
+    >>> train_df.shape, valid_df.shape, test_df.shape
+    ((80, 3), (10, 3), (10, 3))
     """
 
-    from sklearn.model_selection import train_test_split
+    idx = np.arange(df.shape[0])
+    y = df[y_col].values
 
-    X_train_idx, test_xs_idx, _, test_ys = train_test_split(
-        df.index.values,  # 使用索引切割
-        df[y_col].values,
+    stratify_vals = y if stratify is not None else None
+
+    X_train_idx, X_test_idx, _, _ = train_test_split(
+        idx, y,
         train_size=train_size,
         shuffle=shuffle,
         random_state=random_state,
-        stratify=stratify
+        stratify=stratify_vals
     )
+
     if not return_valid:
-        if reset_index:
-            return df.iloc[X_train_idx, :][[*x_cols, y_col]].reset_index(drop=True), \
-                df.iloc[test_xs_idx, :][[*x_cols, y_col]].reset_index(drop=True)
-
-        return df.iloc[X_train_idx, :][[*x_cols, y_col]], df.iloc[test_xs_idx, :][[*x_cols, y_col]]
-
-    if stratify is not None:
-        valid_test_stratify = test_ys
-    else:
-        valid_test_stratify = None
+        # 利用索引返回DataFrame
+        return df.iloc[X_train_idx][x_cols + [y_col]], df.iloc[X_test_idx][x_cols + [y_col]]
 
     X_valid_idx, X_test_idx, _, _ = train_test_split(
-        test_xs_idx,
-        test_ys,
+        X_test_idx, y[X_test_idx],
         train_size=valid_size,
         shuffle=shuffle,
         random_state=random_state,
-        stratify=valid_test_stratify
+        stratify=stratify_vals if return_valid and stratify is not None else None
     )
 
-    if reset_index:
-        return df.iloc[X_train_idx, :][[*x_cols, y_col]].reset_index(drop=True), \
-            df.iloc[X_valid_idx, :][[*x_cols, y_col]].reset_index(drop=True), \
-            df.iloc[X_test_idx, :][[*x_cols, y_col]].reset_index(drop=True)
+    # 利用索引返回DataFrame
+    train_df = df.iloc[X_train_idx][x_cols + [y_col]]
+    valid_df = df.iloc[X_valid_idx][x_cols + [y_col]]
+    test_df = df.iloc[X_test_idx][x_cols + [y_col]]
 
-    return df.iloc[X_train_idx, :][[*x_cols, y_col]], df.iloc[X_valid_idx, :][[*x_cols, y_col]], \
-        df.iloc[X_test_idx, :][[*x_cols, y_col]]
+    if reset_index:
+        train_df.reset_index(drop=True, inplace=True)
+        valid_df.reset_index(drop=True, inplace=True)
+        test_df.reset_index(drop=True, inplace=True)
+
+    return train_df, valid_df, test_df
 
 
 @ParameterTypeAssert({
@@ -101,47 +132,91 @@ def train_test_split_bigdata(
         with_cols=False,
         reset_index=True
 ):
-    """切割大型数据集
-    
-    默认返回六个数据集: X_train, X_valid, X_test, y_train, y_valid, y_test
-
-    训练集、验证集、测试集默认比例为 8:1:1
-
-    :params:
-    with_cols: 是否返回切割后的pandas.DataFrame, default to False, 返回numpy.ndarray
     """
-    res = train_test_split_bigdata_df(
-        df=df,
-        x_cols=x_cols,
-        y_col=y_col,
-        shuffle=shuffle,
-        return_valid=return_valid,
-        random_state=random_state,
-        train_size=train_size,
-        valid_size=valid_size,
-        stratify=stratify,
-        reset_index=reset_index
-    )
+    Splits a large pandas DataFrame into arrays or DataFrames for training, validation, and testing.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to be split.
+    x_cols : list, tuple, pandas.Series, numpy.ndarray
+        The column names to be used as features.
+    y_col : str
+        The column name to be used as the target variable.
+    shuffle : bool, optional (default=True)
+        Whether to shuffle the data before splitting.
+    return_valid : bool, optional (default=True)
+        Whether to return a validation set.
+    random_state : None or int, optional (default=42)
+        The random state for shuffling.
+    train_size : float, optional (default=0.8)
+        The proportion of the dataset to include in the train split.
+    valid_size : float, optional (default=0.5)
+        The proportion of the validation set in the remaining data after the train split.
+    stratify : list, tuple, pandas.Series, numpy.ndarray, or None, optional
+        The data to use for stratifying the split.
+    with_cols : bool, optional (default=False)
+        If True, return DataFrames with column names; otherwise, return numpy arrays.
+    reset_index : bool, optional (default=True)
+        If True, the index of the resulting DataFrames is reset.
+    Returns
+    -------
+    tuple of numpy.ndarray or pandas.DataFrame
+        The train, validation, and test data as numpy arrays or DataFrames.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'feature1': range(100), 'feature2': range(100), 'target': range(100)})
+    >>> train_X, valid_X, test_X, train_y, valid_y, test_y = train_test_split_bigdata(
+    ...        df, x_cols=['feature1', 'feature2'], y_col='target', shuffle=True,
+    ...         random_state=42, with_cols=True)
+    >>> train_X.shape, valid_X.shape, test_X.shape, train_y.shape, valid_y.shape, test_y.shape
+    ((80, 2), (10, 2), (10, 2), (80,), (10,), (10,))
+    """
+    idx = np.arange(df.shape[0])
+    y = df[y_col].values
+
+    stratify_vals = y if stratify is not None else None
+
+    # 分割训练集和测试集
+    X_train_idx, X_test_idx, _, _ = train_test_split(
+        idx, y, train_size=train_size, shuffle=shuffle, random_state=random_state, stratify=stratify_vals)
 
     if not return_valid:
-        train_df, test_df = res
-        if with_cols:
-            return train_df[x_cols], test_df[x_cols], \
-                train_df[y_col].values, test_df[y_col].values
+        # 使用索引获取训练集和测试集
+        train_df, test_df = df.iloc[X_train_idx], df.iloc[X_test_idx]
+        return _process_split_result(train_df, None, test_df, x_cols, None, y_col, with_cols)
 
-        return train_df[x_cols].values, test_df[x_cols].values, \
-            train_df[y_col].values, test_df[y_col].values
+    # 分割验证集和测试集
+    X_valid_idx, X_test_idx, _, _ = train_test_split(
+        X_test_idx, y[X_test_idx], train_size=valid_size, shuffle=shuffle, random_state=random_state,
+        stratify=stratify_vals)
 
-    train_df, valid_df, test_df = res
+    # 使用索引获取训练集、验证集和测试集
+    train_df, valid_df, test_df = df.iloc[X_train_idx], df.iloc[X_valid_idx], df.iloc[X_test_idx]
+    return _process_split_result(train_df, valid_df, test_df, x_cols, y_col, with_cols, reset_index)
 
+
+def _process_split_result(train_df, valid_df, test_df, x_cols, y_col, with_cols, reset_index):
     if with_cols:
-        return train_df[x_cols], \
-            valid_df[x_cols], \
-            test_df[x_cols], \
-            train_df[y_col].values, valid_df[y_col].values, test_df[y_col].values
+        if reset_index:
+            # 重置索引仅在必要时进行
+            train_df = train_df[x_cols + [y_col]].reset_index(drop=True)
+            test_df = test_df[x_cols + [y_col]].reset_index(drop=True)
+            valid_df = valid_df[x_cols + [y_col]].reset_index(drop=True) if valid_df is not None else None
+        else:
+            # 无需重置索引时，直接选择列
+            train_df = train_df[x_cols + [y_col]]
+            test_df = test_df[x_cols + [y_col]]
+            valid_df = valid_df[x_cols + [y_col]] if valid_df is not None else None
+    else:
+        # 直接使用 NumPy 数组
+        train_df = (train_df[x_cols].values, train_df[y_col].values)
+        test_df = (test_df[x_cols].values, test_df[y_col].values)
+        valid_df = (valid_df[x_cols].values, valid_df[y_col].values) if valid_df is not None else None
 
-    return train_df[x_cols].values, valid_df[x_cols].values, test_df[x_cols].values, \
-        train_df[y_col].values, valid_df[y_col].values, test_df[y_col].values
+    # 减少条件判断，直接构造返回值
+    return train_df + (valid_df if valid_df is not None else ()) + test_df
 
 
 @ParameterTypeAssert({
@@ -150,7 +225,45 @@ def train_test_split_bigdata(
 })
 def df_block_split(df, rows_limit=10000):
     """
-    将pandas.core.dataframe切割，并返回索引生成器
+    Splits a DataFrame into blocks of specified row limit.
+    Parameters
+    ----------
+    df : pandas.DataFrame or numpy.ndarray
+        The DataFrame or numpy array to be split.
+    rows_limit : int, optional (default=10000)
+        The maximum number of rows in each block.
+
+    Yields
+    ------
+    pandas.DataFrame or numpy.ndarray
+        Blocks of data with the specified row limit.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': range(100)})
+    >>> for block in df_block_split(df, rows_limit=20):
+    ...     print(block.shape)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    (20, 1)
+    >>> # The actual number of yielded blocks depends on the input DataFrame's shape.
     """
     import numpy as np
 

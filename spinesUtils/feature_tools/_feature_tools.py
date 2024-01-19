@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 
@@ -8,7 +8,27 @@ from spinesUtils.asserts import ParameterTypeAssert, ParameterValuesAssert
 @ParameterTypeAssert({'df': DataFrame, 'threshold': float})
 @ParameterValuesAssert({'threshold': 'lambda s: 0 <= s <= 1'})
 def variation_threshold(df, threshold=0.01):
-    """使用异众比例筛选特征"""
+    """
+    Select features based on the variation ratio, which is the ratio of the most common value to all observations.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame containing the features to be evaluated.
+    threshold : float
+        The threshold for the variation ratio to decide feature selection.
+
+    Returns
+    -------
+    list
+        A list of column names that meet the variation ratio threshold.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 1, 1, 2], 'B': [1, 2, 3, 4]})
+    >>> variation_threshold(df, threshold=0.75)
+    ['A']
+    """
     from spinesUtils.data_insight import df_preview
     filters = df_preview(df, indicators=['variation']).to_dict()['variation']
 
@@ -23,7 +43,27 @@ def variation_threshold(df, threshold=0.01):
 @ParameterTypeAssert({'df': DataFrame, 'threshold': float})
 @ParameterValuesAssert({'threshold': 'lambda s: 0 <= s <= 1'})
 def vars_threshold(df, threshold=0.0):
-    """方差筛选法"""
+    """
+    Select features based on their variance. Features with variance less than or equal to the threshold are selected.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame containing the features to be evaluated.
+    threshold : float
+        The threshold for the variance below which features are selected.
+
+    Returns
+    -------
+    list
+        A list of column names that meet the variance threshold.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 1, 1, 1], 'B': [1, 2, 3, 4]})
+    >>> vars_threshold(df, threshold=0.0)
+    ['A']
+    """
     df_var = {}
     for i in select_numeric_cols(df):
         df_var[i] = df[i].var()
@@ -37,68 +77,31 @@ def vars_threshold(df, threshold=0.0):
 
 
 @ParameterTypeAssert({
-    'eval_x': (None, pd.DataFrame, np.ndarray),
-    'p_threshold': (None, int),
-    'reverse': bool,
-    'according_to': str,
-    'target': (None, pd.Series, np.ndarray)
-})
-def feature_importances(model, eval_x=None, p_threshold=None, reverse=True, according_to='model', target=None):
-    """输出模型重要性的百分比排名， 默认倒序排列
-    model: 模型，要求必须具备feature_importances_属性
-    p_threshold: 过滤阈值(百分比)，返回过滤后的阈值的特征，要求大于等于0，小于等于100, 或者None
-    reverse: bool，是否翻转阈值结果，如果为True, 则返回大于等于过滤阈值的特征，否则返回小于等于过滤阈值的特征
-    according_to: shap or model
-    """
-    assert all([hasattr(model, 'feature_importances_'), hasattr(model, 'feature_name_')])
-    assert p_threshold is None or 0 <= p_threshold <= 100
-    assert len(model.feature_name_) == len(model.feature_importances_)
-    assert according_to in ('model', 'shap')
-
-    if according_to == 'shap' and eval_x is None:
-        raise ValueError("according_to参数等于shap时，eval_x不能为None")
-
-    from ..metrics import sorted_shap_val
-
-    if according_to == 'shap':
-        importances = sorted_shap_val(model, eval_x, target=target)
-    else:
-        importances = Series(model.feature_importances_, index=model.feature_name_)
-
-    importance_rate = importances / importances.sum()
-
-    if p_threshold is not None:
-        compare_with = ">=" if reverse else "<="
-
-        return DataFrame([
-            (i[0], i[1][0], f"{round(i[1][1] * 100, 2)}%") for i in
-            filter(
-                lambda s:
-                eval(f"s[1][0] * 100 {compare_with} p_threshold", {'s': s, 'p_threshold': p_threshold}), sorted(
-                    {
-                        name: [value1, value2] for name, value1, value2 in
-                        zip(importances.index, importances.values, importance_rate.values)
-                    }.items(), key=lambda s: s[1], reverse=reverse
-                )
-            )
-        ], columns=['features', 'importance_val', 'importance_rate'])
-
-    return DataFrame([
-        (i[0], i[1][0], f"{round(i[1][1] * 100, 2)}%") for i in
-        sorted(
-            {
-                name: [value1, value2] for name, value1, value2 in
-                zip(importances.index, importances.values, importance_rate.values)
-            }.items(), key=lambda s: s[1], reverse=reverse
-        )
-    ], columns=['features', 'importance_val', 'importance_rate'])
-
-
-@ParameterTypeAssert({
     'df': pd.DataFrame,
     'exclude_binary_value_column': bool
 })
 def select_numeric_cols(df, exclude_binary_value_column=False):
+    """
+    Select columns with numeric data types from a DataFrame.
+
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame from which to select numeric columns.
+    exclude_binary_value_column : bool, default=False
+        If True, excludes columns with binary values.
+
+    Returns
+    -------
+    Index
+        An Index of column names that have numeric data types.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c'], 'C': [True, False, True]})
+    >>> select_numeric_cols(df)
+    Index(['A', 'C'], dtype='object')
+    """
     if exclude_binary_value_column:
         _ = df.nunique(axis=0)
         return _[_ > 2].index
@@ -111,7 +114,25 @@ def select_numeric_cols(df, exclude_binary_value_column=False):
 })
 def get_specified_type_cols(df, types):
     """
-    从pandas dataframe中快速选取对应类型数据
+    Quickly select column names with specified data types from a DataFrame.
+
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame from which to select columns.
+    types : str or list
+        The data type(s) to filter for column selection.
+
+    Returns
+    -------
+    list
+        A list of column names that match the specified data types.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c'], 'C': [True, False, True]})
+    >>> get_specified_type_cols(df, types='int64')
+    ['A']
     """
     _ = []
     for k, v in df.dtypes.items():
@@ -130,6 +151,29 @@ def get_specified_type_cols(df, types):
     'exclude_cols': (None, str, list)
 })
 def get_x_cols(df, y_col, exclude_cols=None):
+    """
+    Get the column names for features (X) from a DataFrame, optionally excluding specified columns.
+
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame from which to select feature columns.
+    y_col : str or list
+        The column name(s) representing the target variable(s).
+    exclude_cols : str or list, optional
+        The column name(s) to exclude from the feature columns.
+
+    Returns
+    -------
+    list
+        A list of column names to be used as features.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'target': [7, 8, 9]})
+    >>> get_x_cols(df, 'target')
+    ['A', 'B']
+    """
     cols = df.columns.tolist()
     if isinstance(y_col, str):
         if y_col in cols:
@@ -156,15 +200,29 @@ def get_x_cols(df, y_col, exclude_cols=None):
     'cols': (list, tuple, np.ndarray, pd.Series)
 })
 def exclude_columns(df, cols):
-    """返回排除掉指定列的dataframe
-    :params:
+    """
+    Return a DataFrame excluding specified columns.
 
-    df: pandas.core.DataFrame
-    exclude_columns: 需要排除的列，可以是list、tuple、np.ndarray、pd.Series
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame to process.
+    cols : list, tuple, ndarray, Series
+        The column(s) to exclude.
 
-    :returns:
-    pd.core.DataFrame
+    Returns
+    -------
+    DataFrame
+        A new DataFrame with the specified columns excluded.
 
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]})
+    >>> exclude_columns(df, ['B', 'C'])
+       A
+    0  1
+    1  2
+    2  3
     """
     column_num = df.shape[1]
 
