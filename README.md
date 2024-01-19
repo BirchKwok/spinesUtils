@@ -10,7 +10,7 @@
 - [x] Classifiers for imbalanced data
 - [x] Pandas Dataframe data compression
 - [x] Pandas DataFrame insight tools
-- [x] Large data training set and testing set splitting functions
+- [x] Large data training and testing set splitting functions
 - [x] An intuitive timer.
 
 It is currently undergoing rapid iteration. If you encounter any issues with its functionalities, feel free to raise an issue.
@@ -1070,7 +1070,7 @@ df_insight
 
 
 
-## Large data training set and testing set splitting functions
+## Large data training and testing set splitting functions
 
 
 ```python
