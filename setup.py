@@ -29,7 +29,8 @@ setup(
         'dask>=2023.6.0',
         'pyarrow>=11.0.0',
         'polars>=0.19.3',
-        'pytz>=2021.1'
+        'pytz>=2021.1',
+        'numba>=0.58.1'
     ],
     zip_safe=False,
     include_package_data=True
