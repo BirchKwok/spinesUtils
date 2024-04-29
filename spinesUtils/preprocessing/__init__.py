@@ -12,9 +12,3 @@ from ._split_tools import (
     train_test_split_bigdata_df,
     df_block_split
 )
-
-from ._data_shape import (
-    reshape_if,
-    squeeze_if,
-    unsqueeze_if
-)

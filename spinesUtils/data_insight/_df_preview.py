@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from numba import jit
 
 from spinesUtils.feature_tools import select_numeric_cols
 from spinesUtils.asserts import ParameterTypeAssert
@@ -135,6 +134,7 @@ def df_preview(dataset, indicators=None):
     A   2.0   1.0
     B   5.0   1.0
     """
+    from numba import jit
 
     @jit(nopython=True, fastmath=True)
     def calculate_skewness_kurtosis(data, mean, std):
