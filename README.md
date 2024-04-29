@@ -216,82 +216,6 @@ your_df = read_csv(
 )
 ```
 
-
-    ---------------------------------------------------------------------------
-
-    FileNotFoundError                         Traceback (most recent call last)
-
-    /var/folders/4m/8hmtzcr17x94h4cmzhc0zrgh0000gn/T/ipykernel_701/737171132.py in ?()
-          1 from spinesUtils import read_csv
-          2 
-    ----> 3 your_df = read_csv(
-          4     fp='/path/to/your/file.csv',
-          5     sep=',',  # equal to pandas read_csv.sep
-          6     turbo_method='polars',  # use turbo_method to speed up load time
-
-
-    ~/projects/spinesUtils/spinesUtils/asserts/_inspect.py in ?(*args, **kwargs)
-        194             if mismatched_params:
-        195                 error_msg = self.build_type_error_msg(mismatched_params)
-        196                 raise ParametersTypeError(error_msg)
-        197 
-    --> 198             return func(**kwargs)
-    
-
-    ~/projects/spinesUtils/spinesUtils/asserts/_inspect.py in ?(*args, **kwargs)
-        256             if mismatched_params:
-        257                 error_msg = self.build_values_error_msg(mismatched_params)
-        258                 raise ParametersValueError(error_msg)
-        259 
-    --> 260             return func(**kwargs)
-    
-
-    ~/projects/spinesUtils/spinesUtils/io/_data.py in ?(fp, sep, chunk_size, transform2low_mem, turbo_method, encoding, verbose, **read_csv_kwargs)
-        100 
-        101     if chunk_size:
-        102         df = read_text(fp)
-        103     else:
-    --> 104         df = turbo_reader(fp, turbo_method)
-        105 
-        106     if transform2low_mem:
-        107         from ..preprocessing import transform_dtypes_low_mem
-
-
-    ~/projects/spinesUtils/spinesUtils/io/_data.py in ?(fpath, tm)
-         65     def turbo_reader(fpath, tm):
-         66         if tm == 'polars':
-         67             from polars import read_csv
-    ---> 68             return read_csv(fpath, separator=sep, encoding=encoding, **read_csv_kwargs).to_pandas()
-         69 
-         70         if tm == 'pyarrow':
-         71             from pyarrow.csv import read_csv, ParseOptions, ReadOptions
-
-
-    ~/miniconda3/envs/dev/lib/python3.11/site-packages/polars/io/csv/functions.py in ?(source, has_header, columns, new_columns, separator, comment_char, quote_char, skip_rows, dtypes, schema, null_values, missing_utf8_is_empty_string, ignore_errors, try_parse_dates, n_threads, infer_schema_length, batch_size, n_rows, encoding, low_memory, rechunk, use_pyarrow, storage_options, skip_rows_after_header, row_count_name, row_count_offset, sample_size, eol_char, raise_if_empty, truncate_ragged_lines)
-        362         use_pyarrow=False,
-        363         raise_if_empty=raise_if_empty,
-        364         **storage_options,
-        365     ) as data:
-    --> 366         df = pl.DataFrame._read_csv(
-        367             data,
-        368             has_header=has_header,
-        369             columns=columns if columns else projection,
-
-
-    ~/miniconda3/envs/dev/lib/python3.11/site-packages/polars/dataframe/frame.py in ?(cls, source, has_header, columns, separator, comment_char, quote_char, skip_rows, dtypes, schema, null_values, missing_utf8_is_empty_string, ignore_errors, try_parse_dates, n_threads, infer_schema_length, batch_size, n_rows, encoding, low_memory, rechunk, skip_rows_after_header, row_count_name, row_count_offset, sample_size, eol_char, raise_if_empty, truncate_ragged_lines)
-        766                 )
-        767 
-        768         projection, columns = handle_projection_columns(columns)
-        769 
-    --> 770         self._df = PyDataFrame.read_csv(
-        771             source,
-        772             infer_schema_length,
-        773             batch_size,
-
-
-    FileNotFoundError: No such file or directory: /path/to/your/file.csv
-
-
 ## Classifiers for imbalanced data
 
 
@@ -507,19 +431,6 @@ df_insight
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1173,19 +1084,6 @@ train_df.head()
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
