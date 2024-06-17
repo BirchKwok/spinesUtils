@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime
-
 import pytz
 
 from spinesUtils.asserts import ParameterTypeAssert
@@ -30,7 +29,7 @@ class Logger:
 
     Methods
     -------
-    log(msg, level='INFO'):
+    log(msg, level='INFO', rewrite_print=False):
         Logs a message with the specified severity level.
     info(msg):
         Logs a message with 'INFO' severity level.
@@ -64,6 +63,7 @@ class Logger:
             get_env_variable('SPS_LOG_LEVEL', default=level, default_type=str).upper(), 20)  # 默认为 INFO 级别
         self.with_time = with_time
         self.use_utc_time = use_utc_time
+        self._last_message = ""  # 用于存储最后一条消息
 
         self._file_handle = None
         if self.fp:
@@ -93,13 +93,16 @@ class Logger:
             self._file_handle.close()
             self._file_handle = None
 
-    def _prefix_format(self):
+    def _get_time_str(self):
+        if self.use_utc_time:
+            return datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
+        else:
+            return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def _prefix_format(self, with_time=True):
         prefix = []
-        if self.with_time:
-            if self.use_utc_time:
-                time_str = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
-            else:
-                time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if with_time:
+            time_str = self._get_time_str()
             prefix.append(time_str)
         if self.name:
             prefix.append(self.name)
@@ -107,45 +110,149 @@ class Logger:
             return ' - '.join(prefix)
         return ''
 
-    @ParameterTypeAssert({'msg': str, 'level': str})
-    def log(self, msg, level='INFO'):
+    @ParameterTypeAssert({'msg': str, 'level': str, 'rewrite_print': bool})
+    def log(self, msg, level='INFO', rewrite_print=False):
+        """
+        Logs a message with the specified severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        level : str, optional (default='INFO')
+            The severity level of the message. Must be one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL'.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
         message_level = self._LOG_LEVELS.get(level.upper(), 20)
         if message_level < self.level:
             return
 
-        prefix = self._prefix_format()
-        if prefix:
-            message = (self._prefix_format() + ' - ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' +
-                       msg + '\n')
+        # 文件中始终带有时间戳
+        file_prefix = self._prefix_format(with_time=True)
+        if file_prefix:
+            file_message = (file_prefix + ' - ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\n')
         else:
-            message = ('[log] '+ self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\n')
+            file_message = ('[log] ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\n')
+
+        # 控制台输出根据 with_time 参数决定是否带时间戳
+        console_prefix = self._prefix_format(with_time=self.with_time)
+        if console_prefix:
+            console_message = (console_prefix + ' - ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\r')
+        else:
+            console_message = ('[log] ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\r')
 
         # 如果文件句柄存在，则写入文件
         if self._file_handle:
             try:
-                self._file_handle.write(message)
+                self._file_handle.write(file_message)
                 self._file_handle.flush()
             except Exception as e:
                 print(f"Error writing to file {self.fp}: {e}", file=sys.stderr)
 
-        sys.stderr.write(message)
+        # 处理控制台输出
+        if rewrite_print:
+            if msg != self._last_message:
+                sys.stderr.write('\n' + console_message)
+            else:
+                sys.stderr.write('\r' + console_message)
+            self._last_message = msg
+        else:
+            sys.stderr.write('\n' + console_message)
+            self._last_message = msg
+
+        sys.stderr.flush()
 
     @ParameterTypeAssert({'msg': str})
-    def info(self, msg):
-        return self.log(msg, "INFO")
+    def info(self, msg, rewrite_print=False):
+        """
+        Logs a message with 'INFO' severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
+        return self.log(msg, "INFO", rewrite_print=rewrite_print)
 
     @ParameterTypeAssert({'msg': str})
-    def error(self, msg):
-        return self.log(msg, "ERROR")
+    def error(self, msg, rewrite_print=False):
+        """
+        Logs a message with 'ERROR' severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
+        return self.log(msg, "ERROR", rewrite_print=rewrite_print)
 
     @ParameterTypeAssert({'msg': str})
-    def debug(self, msg):
-        return self.log(msg, "DEBUG")
+    def debug(self, msg, rewrite_print=False):
+        """
+        Logs a message with 'DEBUG' severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
+        return self.log(msg, "DEBUG", rewrite_print=rewrite_print)
 
     @ParameterTypeAssert({'msg': str})
-    def critical(self, msg):
-        return self.log(msg, "CRITICAL")
+    def critical(self, msg, rewrite_print=False):
+        """
+        Logs a message with 'CRITICAL' severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
+        return self.log(msg, "CRITICAL", rewrite_print=rewrite_print)
 
     @ParameterTypeAssert({'msg': str})
-    def warning(self, msg):
-        return self.log(msg, "WARNING")
+    def warning(self, msg, rewrite_print=False):
+        """
+        Logs a message with 'WARNING' severity level.
+
+        Parameters
+        ----------
+        msg : str
+            The message to log.
+        rewrite_print : bool, optional (default=False)
+            If True, rewrites the last message on the console.
+
+        Returns
+        -------
+        None
+        """
+        return self.log(msg, "WARNING", rewrite_print=rewrite_print)
