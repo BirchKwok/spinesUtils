@@ -142,11 +142,15 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+
 # files
 *.csv
-*.txt
 *.tsv
+*.txt
 *.pkl
+
+# no ignoring requirements folder, but ignoring every .txt outside of it
+!requirements/*.txt
 
 # system stuff
 .DS_Store

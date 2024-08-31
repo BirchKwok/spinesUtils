@@ -23,7 +23,7 @@ def iter_count(file_name):
 
     Examples
     --------
-    >>> iter_count_v0('large_file.txt')
+    >>> iter_count('large_file.txt')
     1000000
     """
     from itertools import (takewhile, repeat)
@@ -186,7 +186,14 @@ def find_same_file(filename, to_find_path, absolute_path=False):
 
 
 def is_in_ipython():
-    """判断是否在ipython环境下"""
+    """Identify whether the code is running in an IPython environment.
+
+    Returns
+    -------
+    bool
+        True if the code is running in an IPython environment, False otherwise.
+    """
+
     try:
         from IPython import get_ipython
         if 'IPKernelApp' not in get_ipython().config:
@@ -241,20 +248,20 @@ def reindex_iterable_object(obj, key=None, index_start=0):
     [(0, 'watermelon')]
 
     >>> # Example 3: Group by the Length of a String
-    >>> strings = ['apple', 'banana', 'pear', 'grape', 'orange', 'watermelon']
+    >>> strings = ['apple', 'banana', 'peach', 'grape', 'orange', 'watermelon']
     >>> reindexed = list(reindex_iterable_object(strings, key=lambda x: len(x)))
     >>> for group in reindexed:
     ...     print(group)
 
-    [(0, 'apple'), (1, 'pear'), (2, 'grape')]
+    [(0, 'apple'), (1, 'peach'), (2, 'grape')]
     [(0, 'banana'), (1, 'orange')]
     [(0, 'watermelon')]
 
     """
     from itertools import groupby
 
-    sorted_obj = sorted(obj, key=key)  # 对列表进行排序
-    grouped_obj = [list(group) for key, group in groupby(sorted_obj, key=key)]  # 对排序后的列表进行分组
+    sorted_obj = sorted(obj, key=key)  # sort the object based on the key
+    grouped_obj = [list(group) for key, group in groupby(sorted_obj, key=key)]  # group the object by the key
 
     for group in grouped_obj:
         yield [(idx, g) for idx, g in enumerate(group, start=index_start)]
@@ -299,16 +306,14 @@ def get_env_variable(name, default=None, default_type=str):
 
     def type_cast(v):
         if v is None:
-            return default  # 如果环境变量未设置，则返回默认值
+            return default  # if the value is None, return the default value
         try:
-            # 尝试类型转换，如果失败则捕获异常并返回默认值
+            # try to cast the value to the specified type
             return default_type(v)
         except Exception:
             return default
 
-    # 从环境变量中获取值，如果未设置则使用 None
     value = os.environ.get(name)
 
-    # 对获取的值进行类型转换
     return type_cast(value)
 

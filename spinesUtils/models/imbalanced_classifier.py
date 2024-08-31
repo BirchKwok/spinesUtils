@@ -49,11 +49,11 @@ class MultiClassBalanceClassifier(BaseEstimator, ClassifierMixin):
     >>> from sklearn.tree import DecisionTreeClassifier
     >>> X, y = make_classification(n_samples=1000, n_features=20, n_informative=2, n_redundant=0, n_classes=3, random_state=1)
     >>> clf = MultiClassBalanceClassifier(base_estimator=DecisionTreeClassifier(), n_classes=3, random_state=1)
-    >>> clf.fit(X, y) # doctest: +NORMALIZE_WHITESPACE
+    >>> clf.fit(X, y)
     Training learner L1...
     Training learner L2...
     Training learner L3...
-    >>> clf.predict(X) # doctest: +ELLIPSIS
+    >>> clf.predict(X)
     array([...])
     """
     def __init__(self, base_estimator, n_classes, top_classes_ratio=0.75, random_state=None, verbose=True):
@@ -94,15 +94,15 @@ class MultiClassBalanceClassifier(BaseEstimator, ClassifierMixin):
             proba = clf.predict_proba(X)
 
             if proba.shape[1] < num_classes:
-                # 如果某个模型返回的概率数组中缺少某些类别的概率
-                # 我们创建一个新数组，并将缺失的类别概率补为0
+                # if some classes are missing from the probability arrays returned by some models
+                # we create a new array and fill the missing class probabilities with zeros
                 adjusted_proba = np.zeros((proba.shape[0], num_classes))
                 adjusted_proba[:, :proba.shape[1]] = proba
                 proba_predictions.append(adjusted_proba)
             else:
                 proba_predictions.append(proba)
 
-        # 现在可以安全地堆叠和计算平均概率
+        # now we can safely stack and compute the average probabilities
         proba_array = np.stack(proba_predictions, axis=0)
         avg_proba = np.mean(proba_array, axis=0)
         final_prediction = np.argmax(avg_proba, axis=1)
@@ -127,10 +127,10 @@ class MultiClassBalanceClassifier(BaseEstimator, ClassifierMixin):
         X_combined = np.concatenate([X_top[selected_indices_top], X_bottom], axis=0)
         y_combined = np.concatenate([y_top[selected_indices_top], y_bottom], axis=0)
 
-        # 确保每个类别都有足够的样本
+        # make sure each class has enough samples
         for class_label in range(self.n_classes):
             if class_label not in np.unique(y_combined):
-                # 随机从 B 中选择与 B 相同数量的样本
+                # randomly select the same number of samples as B
                 class_indices = np.where(y == class_label)[0]
                 sampled_indices = np.random.choice(class_indices, len(y_bottom), replace=True)
                 X_sampled, y_sampled = X[sampled_indices], y[sampled_indices]
@@ -146,12 +146,13 @@ class MultiClassBalanceClassifier(BaseEstimator, ClassifierMixin):
         inconsistent_indices = np.where(y_pred_L1 != y_pred_L2)[0]
 
         X_L3, y_L3 = X[inconsistent_indices], y[inconsistent_indices]
-        # 确保每个类别都有足够的样本
+
+        # make sure each class has enough samples
         class_counts_L3 = np.bincount(y_L3, minlength=self.n_classes)
         min_class_count = np.min(class_counts_L3[np.nonzero(class_counts_L3)])
         for class_label in range(self.n_classes):
             if class_label not in np.unique(y_L3):
-                # 随机选择与最少类别相同数量的样本
+                # Randomly select the same number of samples as the least represented class
                 class_indices = np.where(y == class_label)[0]
                 sampled_indices = np.random.choice(class_indices, min_class_count, replace=True)
                 X_sampled, y_sampled = X[sampled_indices], y[sampled_indices]

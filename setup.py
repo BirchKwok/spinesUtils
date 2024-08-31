@@ -1,11 +1,21 @@
 from setuptools import find_packages, setup
 
+from pathlib import Path
+
+
+def read_requirements(path):
+    return list(Path(path).read_text().splitlines())
+
+
+min_reqs = read_requirements(Path('.').parent.joinpath("requirements/min.txt"))
+full_reqs = read_requirements(Path('.').parent.joinpath("requirements/full.txt"))
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name='spinesUtils',
-    version="0.4.2",
+    version="0.4.3",
     description='spinesUtils is a user-friendly toolkit for the machine learning ecosystem.',
     keywords='machine learning',
     packages=find_packages(),
@@ -21,17 +31,8 @@ setup(
     url='https://github.com/BirchKwok/spinesUtils',
     author='Birch Kwok',
     author_email='birchkwok@gmail.com',
-    install_requires=[
-        'scikit-learn>=1.0.2',
-        'numpy>=1.17.0',
-        'pandas>=2.0.0',
-        'tqdm>=4.65.0',
-        'dask>=2023.6.0',
-        "pyarrow>=14.0.1",
-        'polars>=0.19.3',
-        'pytz>=2021.1',
-        'numba>=0.58.1'
-    ],
+    install_requires=full_reqs,
+    extras_require={"all": full_reqs, "min": min_reqs},
     zip_safe=False,
     include_package_data=True
 )

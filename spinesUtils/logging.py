@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+
 import pytz
 
 from spinesUtils.asserts import ParameterTypeAssert
@@ -132,21 +133,21 @@ class Logger:
         if message_level < self.level:
             return
 
-        # 文件中始终带有时间戳
+        # The file message is always with a timestamp
         file_prefix = self._prefix_format(with_time=True)
         if file_prefix:
             file_message = (file_prefix + ' - ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\n')
         else:
             file_message = ('[log] ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\n')
 
-        # 控制台输出根据 with_time 参数决定是否带时间戳
+        # The console message is with or without a timestamp, depending on the with_time parameter
         console_prefix = self._prefix_format(with_time=self.with_time)
         if console_prefix:
             console_message = (console_prefix + ' - ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\r')
         else:
             console_message = ('[log] ' + self._LOG_LEVELS_REVERSED[message_level] + ' - ' + msg + '\r')
 
-        # 如果文件句柄存在，则写入文件
+        # If the file handle exists, write to the file
         if self._file_handle:
             try:
                 self._file_handle.write(file_message)
@@ -154,7 +155,6 @@ class Logger:
             except Exception as e:
                 print(f"Error writing to file {self.fp}: {e}", file=sys.stderr)
 
-        # 处理控制台输出
         if rewrite_print:
             if msg != self._last_message:
                 sys.stderr.write('\n' + console_message)
