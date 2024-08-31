@@ -1,0 +1,9 @@
+scikit-learn>=1.0.2
+numpy>=1.17.0
+pandas>=2.0.0
+tqdm>=4.65.0
+dask>=2023.6.0
+pyarrow>=14.0.1
+polars>=0.19.3
+pytz>=2021.1
+numba>=0.58.1
