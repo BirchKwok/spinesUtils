@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='spinesUtils',
-    version="0.4.3",
+    version="0.4.5",
     description='spinesUtils is a user-friendly toolkit for the machine learning ecosystem.',
     keywords='machine learning',
     packages=find_packages(),
@@ -31,8 +31,8 @@ setup(
     url='https://github.com/BirchKwok/spinesUtils',
     author='Birch Kwok',
     author_email='birchkwok@gmail.com',
-    install_requires=full_reqs,
-    extras_require={"all": full_reqs, "min": min_reqs},
+    install_requires=min_reqs,
+    extras_require={"all": full_reqs},
     zip_safe=False,
     include_package_data=True
 )
