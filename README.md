@@ -2,7 +2,7 @@
 *Dedicated to helping users do more in less time.*
 
 <big><i><b>spinesUtils</b></i></big>
- is a user-friendly toolkit for the machine learning ecosystem, offering ready-to-use features such as
+ is a library that provides template code for Python development to shorten the project development cycle, offering ready-to-use features such as
 
 - [x] Logging functionality
 - [x] Type checking and parameter generation
