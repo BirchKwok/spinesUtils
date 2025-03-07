@@ -1,14 +1,14 @@
 from setuptools import find_packages, setup
+
 from pathlib import Path
 
-CURRENT_DIR = Path(__file__).parent
 
-def read_requirements(filename):
-    with open(CURRENT_DIR / "requirements" / filename) as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+def read_requirements(path):
+    return list(Path(path).read_text().splitlines())
 
-min_reqs = read_requirements("min.txt")
-full_reqs = read_requirements("full.txt")
+
+min_reqs = read_requirements(Path('.').parent.joinpath("requirements/min.txt"))
+full_reqs = read_requirements(Path('.').parent.joinpath("requirements/full.txt"))
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -36,8 +36,5 @@ setup(
     install_requires=min_reqs,
     extras_require={"all": full_reqs},
     zip_safe=False,
-    include_package_data=True,
-    package_data={
-        '': ['requirements/*.txt']
-    }
+    include_package_data=True
 )
