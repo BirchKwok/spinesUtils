@@ -1,5 +1,5 @@
 <div align="center">
-  <h3><i><b>spinesUtils</b></i></h3>
+  <h1><i><b>spinesUtils</b></i></h1>
   <p><i>Accelerate your Python development workflow</i></p>
 </div>
 

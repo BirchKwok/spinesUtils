@@ -7,8 +7,8 @@ def read_requirements(path):
     return list(Path(path).read_text().splitlines())
 
 
-min_reqs = read_requirements(Path('.').parent.joinpath("requirements/min.txt"))
-full_reqs = read_requirements(Path('.').parent.joinpath("requirements/full.txt"))
+min_reqs = read_requirements(Path('.').joinpath("requirements/min.txt"))
+full_reqs = read_requirements(Path('.').joinpath("requirements/full.txt"))
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -21,6 +21,7 @@ setup(
     packages=find_packages(),
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license='Apache 2.0',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
