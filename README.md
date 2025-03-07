@@ -1,6 +1,3 @@
-# spinesUtils
-*Dedicated to helping users do more in less time.*
-
 <div align="center">
   <h3><i><b>spinesUtils</b></i></h3>
   <p><i>Accelerate your Python development workflow</i></p>
