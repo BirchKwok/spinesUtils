@@ -16,8 +16,8 @@ with open("README.md", "r") as fh:
 setup(
     name='spinesUtils',
     version="0.4.6",
-    description='spinesUtils is a user-friendly toolkit for the machine learning ecosystem.',
-    keywords='machine learning',
+    description='spinesUtils is a user-friendly toolkit for python development.',
+    keywords='Helpful tools for python development',
     packages=find_packages(),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -27,6 +27,8 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13'
     ],
     url='https://github.com/BirchKwok/spinesUtils',
     author='Birch Kwok',
