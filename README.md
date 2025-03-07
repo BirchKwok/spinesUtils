@@ -1,6 +1,6 @@
 <div align="center">
   <h1><i><b>spinesUtils</b></i></h1>
-  <p><i>Accelerate your Python development workflow</i></p>
+  <p><b><i>Accelerate your Python development workflow</i></b></p>
 </div>
 
 ## Overview
