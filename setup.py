@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='spinesUtils',
-    version="0.4.6",
+    version="0.5.0",
     description='spinesUtils is a user-friendly toolkit for python development.',
     keywords='Helpful tools for python development',
     packages=find_packages(),
