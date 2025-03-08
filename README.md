@@ -9,16 +9,16 @@
 
 ## Features
 
-- [x] **Logging functionality** - Simplified logging without handler conflicts
+- [x] **Logging functionality** - High-performance logging tools with zero learning curve
 - [x] **Type checking and parameter validation** - Robust validation decorators
 - [x] **CSV file reading acceleration** - Performance-optimized data loading
 - [x] **Imbalanced data classifiers** - Specialized ML tools for imbalanced datasets
 - [x] **Pandas DataFrame data compression** - Memory optimization for large datasets
 - [x] **DataFrame insight tools** - Quick data analysis and visualization
 - [x] **Large data train-test splitting** - Efficient data partitioning for ML pipelines
-- [x] **Intuitive timer** - Simple timing and benchmarking tools
+- [x] **Intuitive timer** - Feature-rich yet easy-to-use precision timer
 
-This library is currently undergoing rapid iteration. If you encounter any issues with its functionalities, feel free to [raise an issue](https://github.com/yourusername/spinesUtils/issues).
+This library is currently undergoing rapid iteration. If you encounter any issues with its functionalities, feel free to [raise an issue](https://github.com/BirchKwok/spinesUtils/issues).
 
 ## Installation
 
@@ -36,7 +36,7 @@ The Logger class provides convenient logging without worrying about handler conf
 
 ```python
 # load spinesUtils module
-from spinesUtils.logging import Logger
+from spinesUtils.logging import Logger # The alias is FastLogger
 
 # create a logger instance, with name "MyLogger", and no file handler, the default level is "INFO"
 # You can specify a file path `fp` during instantiation. If not specified, logs will not be written to a file.
@@ -49,6 +49,20 @@ logger.warning("This is an warning message.")
 logger.error("This is an error message.")
 logger.critical("This is an critical message.")
 ```
+
+#### Performance Comparison
+
+FastLogger vs Python's standard logging library (1 million messages, 20 threads):
+
+| Metric | Standard logging | FastLogger | Improvement |
+|--------|-----------------|------------|-------------|
+| Total time (seconds) | 17.73 | 0.82 | 21.58x faster |
+| Messages per second | 56,389 | 1,216,862 | 21.58x higher |
+| Write speed (MB/s) | 6.94 | 14.04 | 2.02x faster |
+| Average message size (bytes) | 129.00 | 12.10 | 10.66x smaller |
+| Total log file size (MB) | 123.02 | 11.54 | 10.66x smaller |
+
+*Test environment: MacBook Pro (Apple Silicon M1 Pro, 32GB RAM)*
 
 ### Type Checking and Parameter Validation
 
